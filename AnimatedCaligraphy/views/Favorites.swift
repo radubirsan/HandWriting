@@ -4,7 +4,7 @@ struct Favorites: View {
     @Binding var styloSelection: Int
     @Binding var tabSelection: Int
     @Binding var stylos: [Stylo]
-    
+    @State private var progress: Double = 0.0
     @State private var favorites: [Stylo] = []
     @State var showAll: Bool = true
     var columns: Int // New property to determine the number of columns
@@ -39,7 +39,19 @@ struct Favorites: View {
                         .frame(width: 365, height: 365, alignment: .top)
                        
                         .multilineTextAlignment(stylos[index].align == 0 ? .leading : stylos[index].align == 1 ? .center : .trailing)
-                        .background(stylos[index].bColor)
+                       
+                        .background(
+                                                   Group {
+                                                       if (stylos[index].bkImage.count > 4) {
+                                                           Image(stylos[index].bkImage)
+                                                               .resizable()
+                                                               .scaledToFill()
+                                                               .clipped()
+                                                       } else {
+                                                           stylos[index].bColor
+                                                       }
+                                                   }.shadow(radius: 10, y: 10.0)
+                                               )
                         .foregroundColor(stylos[index].tColor)
                         .cornerRadius(19)
                         .onTapGesture {
@@ -124,7 +136,7 @@ struct Favorites: View {
     // Placeholder for share function
     func shareStylo(_ stylo: Stylo) {
         print("Share Z \(stylo.text)")
-        Helper.presentShareLink(stylo)
+        Helper.presentShareLink(stylo, $progress)
     }
 }
 

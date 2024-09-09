@@ -45,7 +45,8 @@ class VideoManager {
                         videoSize: CGSize,
                         alignment: TextAlignment,
                         bkgImage:String,
-                        completion: ((Bool) -> Void)?) {
+                        completion: ((Bool) -> Void)?,
+                        progress: ((Double) -> Void)?) {
 
            var frames = rows
             let width = Int(videoSize.width)
@@ -104,7 +105,9 @@ class VideoManager {
            }
 
            assetWriter.startSession(atSourceTime: CMTime.zero)
-
+        // Track total frame count to calculate progress
+          let totalFrames = frames.flatMap { $0 }.reduce(0) { $0 + $1.frameCount }
+          
            assetWriterInput.requestMediaDataWhenReady(on: writerQueue) {
               
                            var frameCount = 0
@@ -164,6 +167,12 @@ class VideoManager {
                                    completion?(false)
                                    return
                                }
+                               
+                               // Update progress
+                                          let currentProgress = Double(frameCount) / Double(totalFrames)
+                                          DispatchQueue.main.async {
+                                              progress?(currentProgress) // Send progress to the caller
+                                          }
 
                                if strokeNr >= frames.first![letterNr].frameCount - 1 {
                                    rowX += (frames.first![letterNr].w - 10) * scaleFactor

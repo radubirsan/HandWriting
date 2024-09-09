@@ -15,11 +15,13 @@ struct EditorView: View {
 
     x
     """
-    
+    @State private var progress: Double = 0.0
     @State private var savedVideoURL: URL? = nil
     @State private var lastCharacter: String = ""
     @State private var containerWidth2: CGFloat = 0
     @State var bgColor = Color.red
+    @State var bgColor2 = Color.red
+    
     @State private var fgColor = Color.blue
     @State private var textScale: CGFloat = 5
     @State private var animatePlane = false
@@ -31,9 +33,15 @@ struct EditorView: View {
     @State var characterLimit: Int = 900
     @State var typedCharacters: Int = 0
     @State private var images: [String] = ["letter_1", "letter_2", "letter_3", "letter_4", "letter_5", "letter_6", "letter_7"]
-    
-    @State private var tappedPhotoID: String? = nil
-
+    @State private var videoQuality: VideoQuality = .sd
+    @State private var tappedPhotoID: String = ""
+    enum VideoQuality: String, CaseIterable, Identifiable {
+        case sd = "SD"
+        case hd = "HD"
+        case _4k = "4K"
+        
+        var id: String { self.rawValue }
+    }
     init(stylo: Binding<Stylo>, videoModel: VideoModel) {
         _stylo = stylo
         self.videoModel = videoModel  // <-- Initialize videoModel
@@ -43,7 +51,9 @@ struct EditorView: View {
         _textScale = State(initialValue: stylo.wrappedValue.textSize)
         _selectedTextSize = State(initialValue: Int(stylo.wrappedValue.textSize))
         _typedCharacters = State(initialValue: Int(stylo.wrappedValue.text.count))
-       // print("INIT Stylo")
+        _tappedPhotoID = State(initialValue: stylo.wrappedValue.bkImage)
+        
+        print("INIT Stylo", stylo.wrappedValue.bkImage)
     }
     
     var body: some View {
@@ -62,7 +72,7 @@ struct EditorView: View {
                         .scrollContentBackground(.hidden)
                         .background(
                                                    Group {
-                                                       if let tappedPhotoID = tappedPhotoID {
+                                                       if !tappedPhotoID.isEmpty {
                                                            Image(tappedPhotoID)
                                                                .resizable()
                                                                .scaledToFill()
@@ -81,15 +91,10 @@ struct EditorView: View {
                         .textContentType(.init(rawValue: ""))
                         .autocorrectionDisabled(true)
                         .limitText($inputString, to: characterLimit)
-                        .onChange(of: inputString) { _, _ in
-                            typedCharacters = inputString.count
-                            if(!isFocused || sequences.isEmpty) {
-                                sequences = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
-                            }
-                        }
-                        .onChange(of: bgColor) { _, _ in
-                            tappedPhotoID = nil
-                        }
+                        .clipped()
+                        .cornerRadius(19)
+                        .shadow(radius: 10, y: 10.0)
+                     
                 }
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
                  Text("\(typedCharacters) / \(characterLimit)")
@@ -103,19 +108,19 @@ struct EditorView: View {
                             .foregroundColor(fgColor)
                             
                             .background(
-                                                       Group {
-                                                           if let tappedPhotoID = tappedPhotoID {
-                                                               Image(tappedPhotoID)
-                                                                   .resizable()
-                                                                   .scaledToFill()
-                                                                   .clipped()
-                                                                   .cornerRadius(19)
-                                                                   
-                                                           } else {
-                                                               bgColor.cornerRadius(19)
-                                                           }
-                                                               
-                                                       }.shadow(radius: 10, y: 10.0)
+                                   Group {
+                                       if  !tappedPhotoID.isEmpty {
+                                           Image(tappedPhotoID)
+                                               .resizable()
+                                               .scaledToFill()
+                                               .clipped()
+                                               .cornerRadius(19)
+                                               
+                                       } else {
+                                           bgColor.cornerRadius(19)
+                                       }
+                                           
+                                   }.shadow(radius: 10, y: 10.0)
                                                    )
                             .allowsHitTesting(false)
                     }
@@ -156,6 +161,23 @@ struct EditorView: View {
            
             sequences = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
         }
+        .onChange(of: inputString) { _, _ in
+            typedCharacters = inputString.count
+            if(!isFocused || sequences.isEmpty) {
+                sequences = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
+            }
+        }
+        .onChange(of: bgColor2) { _, _ in
+            tappedPhotoID = ""
+            bgColor = bgColor2
+            print("bgColor2 changed", bgColor2)
+        }
+        .onChange(of: bgColor) { _, newValue in
+           
+            bgColor = newValue
+            bgColor2 = bgColor
+            print("bgColor changed", bgColor)
+        }
         .onChange(of: isEditing) { newValue, _ in
             if newValue {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -176,6 +198,11 @@ struct EditorView: View {
             self.inputString = newValue
             textScale = stylo.textSize
             selectedTextSize = Int(textScale)
+        }
+        .onChange(of: stylo.bkImage) { _, newValue in
+            self.tappedPhotoID = newValue
+            print("stylo.bkImage changes", self.tappedPhotoID)
+            
         }
         .onChange(of: stylo.textSize) { _, newValue in
             textScale = newValue
@@ -207,82 +234,110 @@ struct EditorView: View {
     func controlBar() -> some View {
         
         HStack(spacing: 5){
-                Button {
-                    if isFocused {
-                              isFocused = false
-                              isEditing = false
-                          } else {
-                              isFocused = true
-                              isEditing = true
-                          }
-                } label: {
-                   
-                    HStack {
-                        Text(isFocused ? "Done" : "Edit")
-                        Image(systemName: isFocused ? "" : "pencil")
-                    }
-                    .frame(height: 40)
-                    .padding(7)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+            
+            if(isSaving) {
+                ProgressView(value: progress)
+                    .progressViewStyle(LinearProgressViewStyle())
+                    .frame(width:240)
+                    .padding()
+            }
+            else{
+            Button {
+                if isFocused {
+                    isFocused = false
+                    isEditing = false
+                } else {
+                    isFocused = true
+                    isEditing = true
                 }
+            } label: {
                 
-                ZStack {
-                    Image(systemName: "text.alignleft")
-                        
-                        .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                    Picker(selection: $selectedAlignment, label: Text("")) {
-                        Label("left", systemImage: "text.alignleft").tag(0)
-                        Label("center", systemImage: "text.aligncenter").tag(1)
-                        Label("right", systemImage: "text.alignright").tag(2)
-                    }
-                    .opacity(0.011)
-                    .scaleEffect(CGSize(width: 2.3, height: 2.3))
-                    .frame(width: 30)
+                HStack {
+                    Text(isFocused ? "Done" : "Edit")
+                    Image(systemName: isFocused ? "" : "pencil")
                 }
                 .frame(height: 40)
                 .padding(7)
                 .background(Color.blue)
                 .foregroundColor(.white)
                 .cornerRadius(8)
-
-
-                ColorPicker("", selection: $bgColor, supportsOpacity: false)
+            }
+            
+            ZStack {
+                Image(systemName: "text.alignleft")
+                
+                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                Picker(selection: $selectedAlignment, label: Text("")) {
+                    Label("left", systemImage: "text.alignleft").tag(0)
+                    Label("center", systemImage: "text.aligncenter").tag(1)
+                    Label("right", systemImage: "text.alignright").tag(2)
+                }
+                .opacity(0.011)
+                .scaleEffect(CGSize(width: 2.3, height: 2.3))
+                .frame(width: 30)
+            }
+            .frame(height: 40)
+            .padding(7)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            
+            VStack(spacing:7){
+                ColorPicker("", selection: $bgColor2, supportsOpacity: false)
                     .scaleEffect(CGSize(width: 1.3, height: 1.3))
                     .labelsHidden()
-                    .frame(width: 35)
-
+                    .frame(width: 33)
+                
                 ColorPicker("", selection: $fgColor, supportsOpacity: false)
                     .scaleEffect(CGSize(width: 1.3, height: 1.3))
                     .labelsHidden()
-                    .frame(width: 35)
-
-                ZStack {
-                    Image(systemName: "textformat.size")
-                        .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                    Picker(selection: $selectedTextSize, label: Text("")) {
-                        ColorPicker("Back Color", selection: $bgColor, supportsOpacity: false)
-                            .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                           // .labelsHidden()
-                            .frame(width: 135)
-                        Text("Large").tag(60)
-                        Text("Medium").tag(40)
-                        Text("Small").tag(20)
-                    }
-                    .opacity(0.011)
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
                     .frame(width: 33)
+            }
+            .padding(7)
+            ZStack {
+                Image(systemName: "textformat.size")
+                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                Picker(selection: $selectedTextSize, label: Text("")) {
+                    
+                    Text("Large").tag(60)
+                    Text("Medium").tag(40)
+                    Text("Small").tag(20)
                 }
-                .frame(height: 40)
-                .padding(7)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                
-                
+                .opacity(0.011)
+                .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                .frame(width: 33)
+            }
+            .frame(height: 40)
+            .padding(7)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            
+            
+           
+            
+            
+            ZStack {
+                Text(videoQuality  == .sd ? "SD": videoQuality  == .hd ? "HD" : "4K")
+                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                Picker(selection: $videoQuality, label: Text("")) {
+                    
+                    ForEach(VideoQuality.allCases) { quality in
+                        Text(quality.rawValue).tag(quality)
+                    }
+                }
+                .opacity(0.011)
+                .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                .frame(width: 33)
+            }
+            .frame(height: 40)
+            .padding(7)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+        }
                 Button {
-                    presentShareLink()
+                    presentShareLink(for: videoQuality) // Pass the selected video quality
                     animatePlane.toggle()
                 } label: {
                     HStack {
@@ -295,9 +350,25 @@ struct EditorView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
+                .padding(0)
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, options: .repeating, value: isSaving)
                 .disabled(isSaving)
+          //  }
+            
+//            ZStack {
+//                Image(systemName: "paperplane")
+//                    
+//                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+//              
+//            }
+//            .frame(height: 40)
+//            .padding(7)
+//            .background(Color.blue)
+//            .foregroundColor(.white)
+//            .cornerRadius(8)
+            
+            
             }.padding(0)
             
        
@@ -320,36 +391,42 @@ struct EditorView: View {
             return .leading
         }
     }
-    func presentShareLink() {
-        print("your logic here", bgColor)
+    func presentShareLink(for quality: VideoQuality) {
+        print("Selected quality:", quality)
         isSaving = true
         sequences = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
         Task {
-            savedVideoURL = await videoModel.saveModifiedVideo(sequences, bgColor, fgColor, 
+            
+            var size = CGSize(width: 719, height: 719)
+            if(quality == .hd) {
+                size = CGSize(width: 1080, height: 1080)
+            }
+            if(quality == ._4k) {
+                size = CGSize(width: 3080, height: 3080)
+            }
+            
+            savedVideoURL = await videoModel.saveModifiedVideo(sequences, bgColor, fgColor,
                                                                returnAlign(selectedAlignment),
-                                                               tappedPhotoID ?? ""
-                                                    )
-            print(" saveModifiedVideo",  savedVideoURL ?? "no file")
+                                                               tappedPhotoID ?? "",
+                                                               quality: size,
+                                                               progressHandler: { value in
+                                                                                      DispatchQueue.main.async {
+                                                                                          progress = value
+                                                                                      }
+                                                                                  }) // Pass quality here
+            print("saveModifiedVideo", savedVideoURL ?? "no file")
             DispatchQueue.main.async {
-                print("Saving done?" )
-                
                 isSaving = false
-                
-                print("and here")
-               // Thread.sleep(forTimeInterval: 5.2)
                 let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
                 let fileUrl2 = directoryPath!.appendingPathComponent("modified").appendingPathExtension("mp4")
-                
-               
-                
                 guard let url = URL(string: fileUrl2.absoluteString) else { return }
                 let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                 let scene = UIApplication.shared.connectedScenes.first { $0.activationState == .foregroundActive } as? UIWindowScene
                 scene?.keyWindow?.rootViewController?.present(vc, animated: true)
             }
         }
-       
     }
+
     
     }
 
@@ -407,3 +484,6 @@ struct TextViewWrapper: UIViewRepresentable {
         uiView.font = font
     }
 }
+
+
+

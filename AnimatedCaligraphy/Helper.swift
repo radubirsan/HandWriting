@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 class Helper{
     
     static var letters = [
@@ -74,7 +75,9 @@ class Helper{
         Letter(namePrefix: "XX", frameCount: 17, w: 125, h: 242),
         Letter(namePrefix: "YY", frameCount: 15, w: 125, h: 242),
         Letter(namePrefix: "WW", frameCount: 22, w: 125, h: 242),
-        Letter(namePrefix: "ZZ", frameCount: 15, w: 125, h: 242)
+        Letter(namePrefix: "ZZ", frameCount: 15, w: 125, h: 242),
+        
+        Letter(namePrefix: "questionquestionquestion", frameCount: 10, w: 125, h: 242)
         
 
     
@@ -110,16 +113,16 @@ class Helper{
             for l in lett {
                
                 
-                let namePrefix = l.replacingOccurrences(of: " ", with: "_")//.trimmingCharacters(in: .whitespaces)
+                let namePrefix = l.replacingOccurrences(of: " ", with: "_").replacingOccurrences(of: "?", with: "question")//.trimmingCharacters(in: .whitespaces)
                 var count = 2
-                if( namePrefix == namePrefix.lowercased()){
+                if( namePrefix == namePrefix.lowercased() ){
                     count = 3
                 }
                 let expandedPrefix = String(repeating: namePrefix, count: count)
                 if let matchingSequence = letters.first(where: { $0.namePrefix == expandedPrefix }) {
                     sequences.append(matchingSequence)
                 } else {
-                   // print("No match found for: \(namePrefix)")
+                    print("No match found for: \(namePrefix)")
                 }
             }
             
@@ -169,7 +172,7 @@ class Helper{
         return size.width
     }
     
-    static func presentShareLink(_ s:Stylo) {
+    static func presentShareLink(_ s:Stylo, _ progress: Binding<Double> ) {
         
        
         Task {
@@ -177,7 +180,14 @@ class Helper{
             var videoModel: VideoModel = VideoModel()
             var savedVideoURL = await videoModel.saveModifiedVideo(sequences, s.bColor, s.tColor,
                                                                    .center,
-                                                                ""
+                                                                   "", quality: CGSize(width:719, height:719),
+                                                                   progressHandler: { value in
+            
+                                                                                  DispatchQueue.main.async {
+                                                                                      progress.wrappedValue = value
+                                                                                  }
+                      
+                                                                        }
                                                     )
             print(" saveModifiedVideo",  savedVideoURL ?? "no file")
             DispatchQueue.main.async {
