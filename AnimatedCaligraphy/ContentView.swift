@@ -21,6 +21,11 @@ import SwiftUI
 //375 iphone
 //360
 
+/*Simulator iPhoneMini photos
+ 
+/Users/radu/Library/Developer/CoreSimulator/Devices/AC4F6052-1C8D-409B-A958-61CC481B40A4/data/Media/DCIM/100APPLE
+ */
+// -FIRDebugEnabled add this in Produc-Scheme-Edit scheme to debug firebase analytics events
 import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
@@ -50,7 +55,7 @@ struct ContentView: View {
                 // Editor View with videoModel
                 EditorView(stylo: $stylo, videoModel: videoModel)
                     .tabItem {
-                        Label("Editor", systemImage: "pencil")
+                        Label("Editor", systemImage: "square.and.pencil")
                     }
                     .tag(3)
                 

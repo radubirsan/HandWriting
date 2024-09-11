@@ -23,7 +23,7 @@ class VideoManager {
     
     // MARK: video properties
     // frames per second
-    var frameRate: Float32?
+    var frameRate: Float32 = 0
     
   
     var cmMinFrameDuration: CMTime?
@@ -37,7 +37,10 @@ class VideoManager {
     var duration: Float64?
     
     
-  
+    func cancel() {
+        print("Cancel !!!!" )
+        frameRate  = 0
+    }
     
     func createVideo(_ rows: [[Letter]], at fileUrl: URL,
                         backgroundColor: CGColor,
@@ -53,7 +56,7 @@ class VideoManager {
             let height = Int(videoSize.height)
             self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
            print("createVideo ============", bkgImage, frames.count)
-           self.frameRate = 60
+           self.frameRate = 120
           
         var scaleFactor = CGFloat(height) / 2000.0
         scaleFactor = scaleFactor * Helper.size / 40
@@ -107,7 +110,7 @@ class VideoManager {
            assetWriter.startSession(atSourceTime: CMTime.zero)
         // Track total frame count to calculate progress
           let totalFrames = frames.flatMap { $0 }.reduce(0) { $0 + $1.frameCount }
-          
+
            assetWriterInput.requestMediaDataWhenReady(on: writerQueue) {
               
                            var frameCount = 0
@@ -124,13 +127,19 @@ class VideoManager {
                                rowX =  30
                            }
 
-                           while !frames.isEmpty {
+               while !frames.isEmpty && self.frameRate != 0{
                                if assetWriterInput.isReadyForMoreMediaData == false {
                                    print("more buffers need to be written.")
-                                   break
+                                   Thread.sleep(forTimeInterval: 0.1)
+                                   continue
+//  Initial code used break, moved to continue to try and fix a occasionally bug where video generation goes wrong some of the time
+//                                   break
                                }
-
-                               let presentationTime = CMTimeMultiply(CMTimeMake(value: 1, timescale: 60*2), multiplier: Int32(frameCount))
+                       
+                          //  let presentationTime = CMTimeMultiply(CMTimeMake(value: 1, timescale: 30), multiplier: Int32(frameCount))
+                               var presentationTime:CMTime
+                                    presentationTime = CMTimeMake(value: Int64(frameCount), timescale: 102) // at 120 fps playback has slow motion marked witch makes the beginning of the video run at double the speed
+                                  
                                let point = CGPoint(x: Int(rowX + (frames.first![letterNr].x * scaleFactor)), y: height - Int(rowY))
                                strokeNr += 1
                                let img = String(format: "\(frames.first![letterNr].namePrefix)%04d", strokeNr)
@@ -153,7 +162,10 @@ class VideoManager {
                                    
                                    //print(9999, self.bitmap!.ciImage!.cgImage!.cvPixelBuffer!)
                                    if pixelBufferAdaptor.append(self.bitmap!.ciImage!.cgImage!.cvPixelBuffer!, 
-                                                                withPresentationTime: presentationTime) {
+                                                                                  withPresentationTime: presentationTime) {
+                                       let currentTime = Date()
+                                       print("Frame \(img) appended at \(Calendar.current.component(.second, from: currentTime)), presentation time: \(presentationTime.seconds)")    //  let currentTime = Date()
+                                     //  print("Frame \(img) appended at \(Calendar.current.component(.second, from: currentTime)), presentation time: \(presentationTime.seconds)")
                                        success = true
                                        break
                                    } else {
@@ -210,6 +222,16 @@ class VideoManager {
                                    }
                                }
                            }
+               else{
+                   print("HEHEH CANCEL", letterNr)
+                   assetWriterInput.markAsFinished()
+//                   DispatchQueue.main.async {
+//                       completion?(false)
+//                       return
+//                   }
+                     return
+                   
+               }
            }
            self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage: bkgImage)
            print("end")

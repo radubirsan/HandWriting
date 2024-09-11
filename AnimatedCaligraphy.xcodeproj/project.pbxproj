@@ -34,7 +34,7 @@
 		171C67542C8EB6AA007BCE0F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 171C67532C8EB6AA007BCE0F /* GoogleService-Info.plist */; };
 		171C67562C8EB78E007BCE0F /* QuotesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171C67552C8EB78E007BCE0F /* QuotesService.swift */; };
 		1758F98C2C78529E00850D01 /* LeckerliOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1758F98B2C78529E00850D01 /* LeckerliOne-Regular.ttf */; };
-		1764FBF92C89D1B900211370 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764FBF82C89D1B900211370 /* ExploreView.swift */; };
+		1764FBF92C89D1B900211370 /* Stylo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764FBF82C89D1B900211370 /* Stylo.swift */; };
 		17B6BB692C805E24000E6EC5 /* Favorites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B6BB682C805E24000E6EC5 /* Favorites.swift */; };
 		17CC91F12C802BFA0045C787 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CC91F02C802BFA0045C787 /* EditorView.swift */; };
 		17CDA5232C80915C004F9FD0 /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CDA5222C80915C004F9FD0 /* Helper.swift */; };
@@ -74,7 +74,7 @@
 		171C67552C8EB78E007BCE0F /* QuotesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotesService.swift; sourceTree = "<group>"; };
 		1758F98B2C78529E00850D01 /* LeckerliOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LeckerliOne-Regular.ttf"; path = "../../LeckerliOne-Regular.ttf"; sourceTree = "<group>"; };
 		1758F98D2C78531800850D01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		1764FBF82C89D1B900211370 /* ExploreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		1764FBF82C89D1B900211370 /* Stylo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stylo.swift; sourceTree = "<group>"; };
 		17B6BB682C805E24000E6EC5 /* Favorites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favorites.swift; sourceTree = "<group>"; };
 		17CC91F02C802BFA0045C787 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		17CDA5222C80915C004F9FD0 /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
@@ -155,7 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				17CC91F02C802BFA0045C787 /* EditorView.swift */,
-				1764FBF82C89D1B900211370 /* ExploreView.swift */,
+				1764FBF82C89D1B900211370 /* Stylo.swift */,
 				1711FBBA2C81DF690047898A /* KeyboardResponder.swift */,
 				17B6BB682C805E24000E6EC5 /* Favorites.swift */,
 			);
@@ -352,7 +352,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1764FBF92C89D1B900211370 /* ExploreView.swift in Sources */,
+				1764FBF92C89D1B900211370 /* Stylo.swift in Sources */,
 				17D7D9B32C6A153400657426 /* ContentView.swift in Sources */,
 				17D080292C75E39200571F8B /* VideoModel.swift in Sources */,
 				17D080272C75E34900571F8B /* PhotoLibraryManager.swift in Sources */,
@@ -504,6 +504,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnimatedCaligraphy/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Hand Write";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Photo Library Usage needed";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Need access to save generated videos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -515,7 +517,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = as3.AnimatedCaligraphy;
+				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.handwrite;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -539,6 +541,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnimatedCaligraphy/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Hand Write";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Photo Library Usage needed";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Need access to save generated videos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -550,7 +554,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = as3.AnimatedCaligraphy;
+				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.handwrite;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

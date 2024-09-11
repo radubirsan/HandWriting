@@ -32,16 +32,23 @@ class VideoModel: ObservableObject {
         let bgcolor = bgUIColor.cgColor
         let fgcolor = fgUIColor.cgColor
 
-        let success = await withCheckedContinuation { continuation in
-            videoManager.createVideo(s, at: fileUrl, backgroundColor: bgcolor, foregroundColor: fgcolor,
-                                     videoSize: quality, alignment: alignment, bkgImage: bkgImage,
-                                     completion: { success in
-                                         continuation.resume(returning: success)
-                                     },
-                                     progress: { progress in
-                                         // Update the progress handler with the current progress
-                                         progressHandler(progress)
-                                     })
+        
+        let success = await withTaskCancellationHandler {
+                // Code to execute when the task is cancelled
+                videoManager.cancel()  // Assuming videoManager has a cancel method
+        } operation: {
+            
+            await withCheckedContinuation { continuation in
+                videoManager.createVideo(s, at: fileUrl, backgroundColor: bgcolor, foregroundColor: fgcolor,
+                                         videoSize: quality, alignment: alignment, bkgImage: bkgImage,
+                                         completion: { success in
+                    continuation.resume(returning: success)
+                },
+                                         progress: { progress in
+                    // Update the progress handler with the current progress
+                    progressHandler(progress)
+                })
+            }
         }
 
         if success {

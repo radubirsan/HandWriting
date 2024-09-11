@@ -1,5 +1,5 @@
 import SwiftUI
-
+import Firebase
 struct EditorView: View {
     @Binding private var stylo: Stylo
     @State private var isSaving: Bool = false
@@ -21,7 +21,7 @@ struct EditorView: View {
     @State private var containerWidth2: CGFloat = 0
     @State var bgColor = Color.red
     @State var bgColor2 = Color.red
-    
+    @State private var saveTask: Task<Void, Never>? = nil
     @State private var fgColor = Color.blue
     @State private var textScale: CGFloat = 5
     @State private var animatePlane = false
@@ -32,7 +32,7 @@ struct EditorView: View {
     private let fixedSize: CGFloat = 365
     @State var characterLimit: Int = 900
     @State var typedCharacters: Int = 0
-    @State private var images: [String] = ["letter_1", "letter_2", "letter_3", "letter_4", "letter_5", "letter_6", "letter_7"]
+    @State private var images: [String] = ["letter_1", "letter_2", "letter_3", "letter_4", "letter_5", "letter_6", "letter_7", "letter_8"]
     @State private var videoQuality: VideoQuality = .sd
     @State private var tappedPhotoID: String = ""
     enum VideoQuality: String, CaseIterable, Identifiable {
@@ -175,7 +175,9 @@ struct EditorView: View {
         .onChange(of: bgColor) { _, newValue in
            
             bgColor = newValue
-            bgColor2 = bgColor
+            if(tappedPhotoID.isEmpty) {
+                bgColor2 = bgColor
+            }
             print("bgColor changed", bgColor)
         }
         .onChange(of: isEditing) { newValue, _ in
@@ -233,12 +235,11 @@ struct EditorView: View {
     @ViewBuilder
     func controlBar() -> some View {
         
-        HStack(spacing: 5){
-            
+        HStack(spacing: 4){
             if(isSaving) {
                 ProgressView(value: progress)
                     .progressViewStyle(LinearProgressViewStyle())
-                    .frame(width:240)
+                    .frame(width:210)
                     .padding()
             }
             else{
@@ -254,7 +255,7 @@ struct EditorView: View {
                 
                 HStack {
                     Text(isFocused ? "Done" : "Edit")
-                    Image(systemName: isFocused ? "" : "pencil")
+                    //Image(systemName: isFocused ? "" : "pencil")
                 }
                 .frame(height: 40)
                 .padding(7)
@@ -265,7 +266,6 @@ struct EditorView: View {
             
             ZStack {
                 Image(systemName: "text.alignleft")
-                
                     .scaleEffect(CGSize(width: 1.3, height: 1.3))
                 Picker(selection: $selectedAlignment, label: Text("")) {
                     Label("left", systemImage: "text.alignleft").tag(0)
@@ -337,14 +337,21 @@ struct EditorView: View {
             .cornerRadius(8)
         }
                 Button {
-                    presentShareLink(for: videoQuality) // Pass the selected video quality
-                    animatePlane.toggle()
-                } label: {
-                    HStack {
-                        Text("Send")
-                        Image(systemName: isSaving ? "timelapse" : "paperplane")
+                    if(isSaving) {
+                        saveTask?.cancel()
+                        isSaving = false
+                        animatePlane = false
                     }
-                    .frame(height: 40)
+                    else {
+                        presentShareLink(for: videoQuality) // Pass the selected video quality
+                    }
+                    
+                } label: {
+                  //  HStack {
+                        Text(isSaving ? "Cancel" : "Send").bold()
+                       // Image(systemName: isSaving ? "timelapse" : "paperplane")
+                  //  }
+                    .frame(width:73, height: 40)
                     .padding(7)
                     .background(Color.blue)
                     .foregroundColor(.white)
@@ -352,21 +359,9 @@ struct EditorView: View {
                 }
                 .padding(0)
                 .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, options: .repeating, value: isSaving)
-                .disabled(isSaving)
-          //  }
-            
-//            ZStack {
-//                Image(systemName: "paperplane")
-//                    
-//                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-//              
-//            }
-//            .frame(height: 40)
-//            .padding(7)
-//            .background(Color.blue)
-//            .foregroundColor(.white)
-//            .cornerRadius(8)
+                .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
+                
+
             
             
             }.padding(0)
@@ -393,16 +388,18 @@ struct EditorView: View {
     }
     func presentShareLink(for quality: VideoQuality) {
         print("Selected quality:", quality)
+        Analytics.logEvent(AnalyticsEventShare,  parameters: ["param_appShared" : "App Shared from\( EditorView.self)"])
         isSaving = true
+        animatePlane = true
         sequences = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
-        Task {
+        saveTask = Task {
             
             var size = CGSize(width: 719, height: 719)
             if(quality == .hd) {
                 size = CGSize(width: 1080, height: 1080)
             }
             if(quality == ._4k) {
-                size = CGSize(width: 3080, height: 3080)
+                size = CGSize(width: 2160, height: 2160)
             }
             
             savedVideoURL = await videoModel.saveModifiedVideo(sequences, bgColor, fgColor,
@@ -417,6 +414,7 @@ struct EditorView: View {
             print("saveModifiedVideo", savedVideoURL ?? "no file")
             DispatchQueue.main.async {
                 isSaving = false
+                animatePlane = false
                 let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
                 let fileUrl2 = directoryPath!.appendingPathComponent("modified").appendingPathExtension("mp4")
                 guard let url = URL(string: fileUrl2.absoluteString) else { return }
@@ -482,6 +480,17 @@ struct TextViewWrapper: UIViewRepresentable {
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.text = text
         uiView.font = font
+    }
+}
+
+
+extension Animation {
+    func `repeat`(while expression: Bool, autoreverses: Bool = true) -> Animation {
+        if expression {
+            return self.repeatForever(autoreverses: autoreverses)
+        } else {
+            return self
+        }
     }
 }
 

@@ -172,17 +172,17 @@ class Helper{
         return size.width
     }
     
-    static func presentShareLink(_ s:Stylo, _ progress: Binding<Double> ) {
+    static func presentShareLink(_ s:Stylo, _ progress: Binding<Double> ) -> Task<Void, Never> {
         
        
-        Task {
+      let task  = Task {
             var sequences = Helper.parse(s.text.trimmingCharacters(in: .whitespaces))
             var videoModel: VideoModel = VideoModel()
             var savedVideoURL = await videoModel.saveModifiedVideo(sequences, s.bColor, s.tColor,
                                                                    .center,
-                                                                   "", quality: CGSize(width:719, height:719),
+                                                                   s.bkImage,
+                                                                   quality: CGSize(width:719, height:719),
                                                                    progressHandler: { value in
-            
                                                                                   DispatchQueue.main.async {
                                                                                       progress.wrappedValue = value
                                                                                   }
@@ -206,6 +206,7 @@ class Helper{
                 scene?.keyWindow?.rootViewController?.present(vc, animated: true)
             }
         }
+        return task
        
     }
     

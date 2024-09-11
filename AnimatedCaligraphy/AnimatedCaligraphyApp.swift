@@ -17,9 +17,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
   func application(_ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil)   -> Bool {
+      FirebaseConfiguration.shared.setLoggerLevel(FirebaseLoggerLevel.error)
+   //   FirebaseConfiguration.sharedInstance().setLoggerLevel(.Error)
     FirebaseApp.configure()
     Analytics.setAnalyticsCollectionEnabled(true)
-     // Analytics.logEvent("event_name", parameters: ["param_buttonClick" : "App started"])
+      Analytics.logEvent("Hand_write", parameters: ["param_buttonClick" : "App started"])
+    
     return true
   }
 }
