@@ -66,6 +66,7 @@
 		17D7DA052C6CA3C400657426 /* xxx0001.png in Resources */ = {isa = PBXBuildFile; fileRef = 17D7D9F52C6CA3C400657426 /* xxx0001.png */; };
 		17D7DA062C6CA3C400657426 /* xxx0010.png in Resources */ = {isa = PBXBuildFile; fileRef = 17D7D9F62C6CA3C400657426 /* xxx0010.png */; };
 		17D7DA072C6CA3C400657426 /* xxx0011.png in Resources */ = {isa = PBXBuildFile; fileRef = 17D7D9F72C6CA3C400657426 /* xxx0011.png */; };
+		17DF24B92C98195000B1A613 /* TextEditorWithCharacterPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +107,7 @@
 		17D7D9F52C6CA3C400657426 /* xxx0001.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = xxx0001.png; sourceTree = "<group>"; };
 		17D7D9F62C6CA3C400657426 /* xxx0010.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = xxx0010.png; sourceTree = "<group>"; };
 		17D7D9F72C6CA3C400657426 /* xxx0011.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = xxx0011.png; sourceTree = "<group>"; };
+		17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEditorWithCharacterPositions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,6 +195,7 @@
 		17D7D9AF2C6A153400657426 /* AnimatedCaligraphy */ = {
 			isa = PBXGroup;
 			children = (
+				17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */,
 				17CC91EF2C802BC30045C787 /* views */,
 				1758F98D2C78531800850D01 /* Info.plist */,
 				1758F9882C78526C00850D01 /* font */,
@@ -366,6 +369,7 @@
 				17CDA5232C80915C004F9FD0 /* Helper.swift in Sources */,
 				17D7D9E72C6A179B00657426 /* MultiImageSequence.swift in Sources */,
 				17CC91F12C802BFA0045C787 /* EditorView.swift in Sources */,
+				17DF24B92C98195000B1A613 /* TextEditorWithCharacterPositions.swift in Sources */,
 				17CDA5252C809B0F004F9FD0 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -517,7 +521,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.handwrite;
+				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.Inky;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -554,7 +558,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.handwrite;
+				PRODUCT_BUNDLE_IDENTIFIER = ro.as3.Inky;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

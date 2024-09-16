@@ -77,13 +77,19 @@ class Helper{
         Letter(namePrefix: "WW", frameCount: 22, w: 125, h: 242),
         Letter(namePrefix: "ZZ", frameCount: 15, w: 125, h: 242),
         
-        Letter(namePrefix: "questionquestionquestion", frameCount: 10, w: 125, h: 242)
+        Letter(namePrefix: "questionquestionquestion", frameCount: 9, w: 124, h: 242),
+        Letter(namePrefix: "exclamationexclamationexclamation", frameCount: 9, w: 111, h: 242),
+        Letter(namePrefix: "commacommacomma", frameCount: 6, w: 61, h: 242),
+        Letter(namePrefix: "dotdotdot", frameCount: 4, w: 82, h: 242),
+        Letter(namePrefix: "atatat", frameCount: 16, w: 191, h: 242),
+        Letter(namePrefix: "hashtaghashtaghashtag", frameCount: 6, w: 97, h: 242),
+        Letter(namePrefix: "dobledotdobledotdobledot", frameCount: 5, w: 90, h: 242),
+        Letter(namePrefix: "linelineline", frameCount: 3, w: 78, h: 242),
         
 
     
     ]
     static public var size:CGFloat = 20
-    
     static func postRequest() -> [String:String] {
          // do a post request and return post data
          return ["someData" : "someData"]
@@ -112,8 +118,18 @@ class Helper{
             
             for l in lett {
                
+                print("ll", l)
+                let namePrefix = l.replacingOccurrences(of: " ", with: "_")
+                                  .replacingOccurrences(of: "!", with: "exclamation")
+                                  .replacingOccurrences(of: "?", with: "question")
+                                  .replacingOccurrences(of: ",", with: "comma")
+                                  .replacingOccurrences(of: ".", with: "dot")
+                                  .replacingOccurrences(of: "#", with: "hashtag")
+                                  .replacingOccurrences(of: "@", with: "at")
+                                  .replacingOccurrences(of: ":", with: "doubledot")
+                                  .replacingOccurrences(of: "-", with: "line")
+                //.trimmingCharacters(in: .whitespaces)
                 
-                let namePrefix = l.replacingOccurrences(of: " ", with: "_").replacingOccurrences(of: "?", with: "question")//.trimmingCharacters(in: .whitespaces)
                 var count = 2
                 if( namePrefix == namePrefix.lowercased() ){
                     count = 3
@@ -182,6 +198,7 @@ class Helper{
                                                                    .center,
                                                                    s.bkImage,
                                                                    quality: CGSize(width:719, height:719),
+                                                                   fps:30,
                                                                    progressHandler: { value in
                                                                                   DispatchQueue.main.async {
                                                                                       progress.wrappedValue = value

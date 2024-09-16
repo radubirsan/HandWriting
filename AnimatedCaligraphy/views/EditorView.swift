@@ -3,6 +3,7 @@ import Firebase
 struct EditorView: View {
     @Binding private var stylo: Stylo
     @State private var isSaving: Bool = false
+    @State private var replay: Bool = false
     @State private var isEditing: Bool = false
     @ObservedObject var videoModel: VideoModel  // <-- Change here
     @FocusState private var isFocused: Bool
@@ -28,9 +29,22 @@ struct EditorView: View {
     @State private var selectedTextSize: Int = 40
     @State private var selectedAlignment: Int = 1
     @State private var margin: CGFloat = 30
+    @State private var textSpeed: CGFloat = 0.005
     @ObservedObject private var keyboard = KeyboardResponder()
     private let fixedSize: CGFloat = 365
-    @State var characterLimit: Int = 900
+   
+   
+
+    var characterLimit: Int {
+        if selectedTextSize == 20 {
+            return 100
+        } else if selectedTextSize == 40 {
+            return 50
+        } else {
+            return 30
+        }
+    }
+
     @State var typedCharacters: Int = 0
     @State private var images: [String] = ["letter_1", "letter_2", "letter_3", "letter_4", "letter_5", "letter_6", "letter_7", "letter_8"]
     @State private var videoQuality: VideoQuality = .sd
@@ -39,6 +53,9 @@ struct EditorView: View {
         case sd = "SD"
         case hd = "HD"
         case _4k = "4K"
+        case sd60 = "SD 60-fps"
+        case hd60 = "HD 60-fps"
+        case _4k60 = "4K 60-fps"
         
         var id: String { self.rawValue }
     }
@@ -52,8 +69,6 @@ struct EditorView: View {
         _selectedTextSize = State(initialValue: Int(stylo.wrappedValue.textSize))
         _typedCharacters = State(initialValue: Int(stylo.wrappedValue.text.count))
         _tappedPhotoID = State(initialValue: stylo.wrappedValue.bkImage)
-        
-        print("INIT Stylo", stylo.wrappedValue.bkImage)
     }
     
     var body: some View {
@@ -61,7 +76,6 @@ struct EditorView: View {
             ZStack(alignment: .bottom) {
                 VStack {
                     TextEditor(text: $inputString)
-                    
                         .safeAreaPadding(.horizontal, margin/2)
                         .safeAreaPadding(.vertical, margin/3)
                         .foregroundColor(fgColor)
@@ -83,6 +97,7 @@ struct EditorView: View {
                                                    }.shadow(radius: 10, y: 10.0)
                                                )
                         .multilineTextAlignment(returnAlign(selectedAlignment))
+                        .environment(\._lineHeightMultiple, 0.8)
                         .environment(\.sizeCategory, .medium)
                         .opacity(isFocused ? 1 : 0.1)
                         .autocapitalization(.none)
@@ -98,12 +113,16 @@ struct EditorView: View {
                 }
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
                  Text("\(typedCharacters) / \(characterLimit)")
-                    .foregroundColor(Color.white).shadow(radius: 2).frame(height:75)
+                    .padding()
+                    .foregroundColor(Color.black)
+                    .background(Color.gray)
+                    .shadow(radius: 2)
+                    .frame(height:75)
                
-                if !isFocused || isSaving {
+                if !isFocused || isSaving || replay {
                     VStack {
                         TextWriter(inputString: $inputString, rows: $sequences, textSize: $textScale, 
-                                   align: $selectedAlignment, margin:$margin)
+                                   align: $selectedAlignment, margin:$margin, textSpeed:$textSpeed)
                             .frame(width: fixedSize, height: fixedSize)
                             .foregroundColor(fgColor)
                             
@@ -124,27 +143,32 @@ struct EditorView: View {
                                                    )
                             .allowsHitTesting(false)
                     }
-                   // .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                   // .border(.yellow)
                 }
             }
             .frame(height: 365)
             
             controlBar()
-          //  .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - keyboard.currentHeight - 410)
             .frame(width: UIScreen.main.bounds.width - 10, height: 86)
             .background(.gray).cornerRadius(20)
             .padding(.top , 20)
+            HStack(spacing:7){
+                ColorPicker("", selection: $bgColor2, supportsOpacity: false)
+                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                    .labelsHidden()
+                    .frame(width: 33)
+                
+                ColorPicker("", selection: $fgColor, supportsOpacity: false)
+                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                    .labelsHidden()
+                    .frame(width: 33)
+            }
             if(!isEditing && !isFocused){
                 createPhotoGallery()
             }
         }
         .padding(.top, 47)
         .ignoresSafeArea()
-        .onAppear() {
-         //   isFocused = true
-        }
         .onChange(of: selectedTextSize) { _, new in
             if new == 60 {
                 Helper.size = 60
@@ -170,26 +194,15 @@ struct EditorView: View {
         .onChange(of: bgColor2) { _, _ in
             tappedPhotoID = ""
             bgColor = bgColor2
-            print("bgColor2 changed", bgColor2)
         }
         .onChange(of: bgColor) { _, newValue in
-           
             bgColor = newValue
             if(tappedPhotoID.isEmpty) {
                 bgColor2 = bgColor
             }
-            print("bgColor changed", bgColor)
-        }
-        .onChange(of: isEditing) { newValue, _ in
-            if newValue {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                 //   isFocused = true
-                }
-            }
         }
         .onChange(of: stylo.bColor) { _, newValue in
             bgColor = newValue
-            
             textScale = stylo.textSize
             selectedTextSize = Int(textScale)
         }
@@ -203,14 +216,13 @@ struct EditorView: View {
         }
         .onChange(of: stylo.bkImage) { _, newValue in
             self.tappedPhotoID = newValue
-            print("stylo.bkImage changes", self.tappedPhotoID)
-            
         }
         .onChange(of: stylo.textSize) { _, newValue in
             textScale = newValue
             selectedTextSize = Int(textScale)
           
         }
+       
     }
     
     @ViewBuilder
@@ -235,7 +247,7 @@ struct EditorView: View {
     @ViewBuilder
     func controlBar() -> some View {
         
-        HStack(spacing: 4){
+        HStack(spacing: 8){
             if(isSaving) {
                 ProgressView(value: progress)
                     .progressViewStyle(LinearProgressViewStyle())
@@ -257,7 +269,7 @@ struct EditorView: View {
                     Text(isFocused ? "Done" : "Edit")
                     //Image(systemName: isFocused ? "" : "pencil")
                 }
-                .frame(height: 40)
+                .frame(width:73, height: 40 )
                 .padding(7)
                 .background(Color.blue)
                 .foregroundColor(.white)
@@ -265,7 +277,7 @@ struct EditorView: View {
             }
             
             ZStack {
-                Image(systemName: "text.alignleft")
+                Image(systemName: selectedAlignment == 0 ? "text.alignleft" : selectedAlignment == 1 ? "text.aligncenter" : "text.alignright")
                     .scaleEffect(CGSize(width: 1.3, height: 1.3))
                 Picker(selection: $selectedAlignment, label: Text("")) {
                     Label("left", systemImage: "text.alignleft").tag(0)
@@ -282,20 +294,10 @@ struct EditorView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
             
-            VStack(spacing:7){
-                ColorPicker("", selection: $bgColor2, supportsOpacity: false)
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                    .labelsHidden()
-                    .frame(width: 33)
-                
-                ColorPicker("", selection: $fgColor, supportsOpacity: false)
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                    .labelsHidden()
-                    .frame(width: 33)
-            }
-            .padding(7)
+           
+            
             ZStack {
-                Image(systemName: "textformat.size")
+                Image(systemName:  "textformat.size")
                     .scaleEffect(CGSize(width: 1.3, height: 1.3))
                 Picker(selection: $selectedTextSize, label: Text("")) {
                     
@@ -312,19 +314,32 @@ struct EditorView: View {
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(8)
-            
-            
-           
-            
+    
             
             ZStack {
-                Text(videoQuality  == .sd ? "SD": videoQuality  == .hd ? "HD" : "4K")
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                VStack(spacing:0) { Text(videoQuality  == .sd ? "SD": videoQuality  == .hd ? "HD" : "4K")
+                        .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                    if(textSpeed == 0.0025) {
+                        Text("60fps")
+                            .scaleEffect(CGSize(width: 0.7, height: 0.7))
+                    }
+                }
                 Picker(selection: $videoQuality, label: Text("")) {
-                    
                     ForEach(VideoQuality.allCases) { quality in
                         Text(quality.rawValue).tag(quality)
                     }
+                }
+                .onChange(of: videoQuality) {  _ , newQuality in
+                   
+                    print("videoQUality" , videoQuality)
+                            if(videoQuality == .sd60 || videoQuality == .hd60 || videoQuality == ._4k60) {
+                                textSpeed = 0.0025
+                            }
+                            else{
+                                textSpeed = 0.005
+                            }
+                            
+                        
                 }
                 .opacity(0.011)
                 .scaleEffect(CGSize(width: 1.3, height: 1.3))
@@ -395,17 +410,33 @@ struct EditorView: View {
         saveTask = Task {
             
             var size = CGSize(width: 719, height: 719)
+            var fps:Int32 = 30
             if(quality == .hd) {
+                fps = 30
                 size = CGSize(width: 1080, height: 1080)
             }
-            if(quality == ._4k) {
+            else if(quality == ._4k) {
+                fps = 30
                 size = CGSize(width: 2160, height: 2160)
             }
-            
+            else if (quality == .sd60) {
+                fps = 60
+                var size = CGSize(width: 719, height: 719)
+            }
+            else if(quality == .hd60 ) {
+                fps = 60
+                size = CGSize(width: 1080, height: 1080)
+            }
+            else if( quality == ._4k60) {
+                fps = 60
+                size = CGSize(width: 2160, height: 2160)
+            }
+          
             savedVideoURL = await videoModel.saveModifiedVideo(sequences, bgColor, fgColor,
                                                                returnAlign(selectedAlignment),
                                                                tappedPhotoID ?? "",
                                                                quality: size,
+                                                               fps:fps,
                                                                progressHandler: { value in
                                                                                       DispatchQueue.main.async {
                                                                                           progress = value
@@ -429,14 +460,6 @@ struct EditorView: View {
     }
 
 
-extension View {
-    func limitText(_ text: Binding<String>, to characterLimit: Int) -> some View {
-        self
-            .onChange(of: text.wrappedValue) { _ in
-                text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
-            }
-    }
-}
 
 
 
@@ -482,17 +505,5 @@ struct TextViewWrapper: UIViewRepresentable {
         uiView.font = font
     }
 }
-
-
-extension Animation {
-    func `repeat`(while expression: Bool, autoreverses: Bool = true) -> Animation {
-        if expression {
-            return self.repeatForever(autoreverses: autoreverses)
-        } else {
-            return self
-        }
-    }
-}
-
 
 

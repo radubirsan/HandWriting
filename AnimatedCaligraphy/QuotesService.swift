@@ -5,13 +5,14 @@ import Firebase
 
 class QuotesService:ObservableObject {
     @Published var activeLesson:[Quote] =
-    [Quote(id:  "Test ? Question", align: "0", tColor: ".white", bColor: ".purple", textSize: "60", text:"2", bkImage: "")]
+    [Quote(id:  "Test ? Question", align: "0", tColor: ".white", bColor: ".purple", textSize: "60", text:"2", bkImage: "", cat: "")]
  
     
     
     static func fetchAllAvailableQuotes() async throws -> [Stylo] {
         var q = [Stylo]()
-        let snapshot2 = try await Firestore.firestore().collection("quotes").getDocuments()
+        //let snapshot2 = try await Firestore.firestore().collection("quotes").getDocuments()
+        let snapshot2 = try await Firestore.firestore().collection("FirstCollection").getDocuments()
         let documents = snapshot2.documents
         
         for doc in documents {
@@ -22,7 +23,8 @@ class QuotesService:ObservableObject {
                                  bColor: Color(hex: qqq.bColor) ?? .white,
                                  tColor: Color(hex: qqq.tColor) ?? .black,
                                  align: CGFloat(Double(qqq.align) ?? 30),
-                                 bkImage: qqq.bkImage )
+                                 bkImage: qqq.bkImage,
+                                 cat:qqq.cat)
             q.append(s)
         }
         return q//.sorted { Int($0.id) ?? 0 < Int($1.id) ?? 0 }
@@ -38,7 +40,7 @@ struct Quote: Codable, Identifiable , Hashable{
     var textSize:String
     var text:String
     var bkImage:String
-   
+    var cat:String
    
 }
 

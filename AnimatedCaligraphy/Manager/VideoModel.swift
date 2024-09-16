@@ -14,6 +14,7 @@ class VideoModel: ObservableObject {
                            _ alignment: TextAlignment,
                            _ bkgImage: String,
                            quality: CGSize,
+                           fps:Int32,
                            progressHandler: @escaping (Double) -> Void) async -> URL? {
 
         guard let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -40,7 +41,7 @@ class VideoModel: ObservableObject {
             
             await withCheckedContinuation { continuation in
                 videoManager.createVideo(s, at: fileUrl, backgroundColor: bgcolor, foregroundColor: fgcolor,
-                                         videoSize: quality, alignment: alignment, bkgImage: bkgImage,
+                                         videoSize: quality, fps:fps, alignment: alignment, bkgImage: bkgImage,
                                          completion: { success in
                     continuation.resume(returning: success)
                 },

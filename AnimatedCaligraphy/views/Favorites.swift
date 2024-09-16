@@ -13,12 +13,13 @@ struct Favorites: View {
     @State private var selectedFilter: FilterOption = .all
     enum FilterOption: String, CaseIterable {
            case all = "All"
-           case favorite = "Favorites"
+           case favorite = "Favorite"
+           case funny = "Funny"
            case love = "Love"
-           case miss = "Miss"
+           case money = "Money"
            case invite = "Invitation"
            case flyer = "Flyer"
-           case cupon = "Cupon"
+           case cupon = "Coupon"
            case other = "Other" // You can add more filter options as needed
        }
 
@@ -231,11 +232,14 @@ struct Favorites: View {
                return Array(0..<stylos.count)
            case .favorite:
                return Array(0..<stylos.count).filter { isFavorite(stylo: stylos[$0]) }
+           case .funny:
+               return Array(0..<stylos.count).filter {  stylos[$0].cat.contains("funny") }
            case .love:
-               return Array(0..<stylos.count).filter { stylos[$0].text.contains("Tupac") }
-           case .miss:
-               // Implement filtering logic for "miss" if needed
-               return Array(0..<stylos.count) // Placeholder
+               return Array(0..<stylos.count).filter {   stylos[$0].cat.contains("love") }
+           case .money:
+               return Array(0..<stylos.count).filter { stylos[$0].cat.contains("money") }
+           
+               
            case .invite:
                // Implement filtering logic for "invite" if needed
                return Array(0..<stylos.count) // Placeholder

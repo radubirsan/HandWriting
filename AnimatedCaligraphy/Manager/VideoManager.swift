@@ -23,7 +23,7 @@ class VideoManager {
     
     // MARK: video properties
     // frames per second
-    var frameRate: Float32 = 0
+    var frameRate: Int32 = 0
     
   
     var cmMinFrameDuration: CMTime?
@@ -46,6 +46,7 @@ class VideoManager {
                         backgroundColor: CGColor,
                         foregroundColor: CGColor,
                         videoSize: CGSize,
+                        fps:Int32,
                         alignment: TextAlignment,
                         bkgImage:String,
                         completion: ((Bool) -> Void)?,
@@ -56,7 +57,7 @@ class VideoManager {
             let height = Int(videoSize.height)
             self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
            print("createVideo ============", bkgImage, frames.count)
-           self.frameRate = 120
+           self.frameRate = fps
           
         var scaleFactor = CGFloat(height) / 2000.0
         scaleFactor = scaleFactor * Helper.size / 40
@@ -138,7 +139,7 @@ class VideoManager {
                        
                           //  let presentationTime = CMTimeMultiply(CMTimeMake(value: 1, timescale: 30), multiplier: Int32(frameCount))
                                var presentationTime:CMTime
-                                    presentationTime = CMTimeMake(value: Int64(frameCount), timescale: 102) // at 120 fps playback has slow motion marked witch makes the beginning of the video run at double the speed
+                                    presentationTime = CMTimeMake(value: Int64(frameCount), timescale: self.frameRate) // at 120 fps playback has slow motion marked witch makes the beginning of the video run at double the speed
                                   
                                let point = CGPoint(x: Int(rowX + (frames.first![letterNr].x * scaleFactor)), y: height - Int(rowY))
                                strokeNr += 1

@@ -125,3 +125,29 @@ struct ContentView: View {
     }
     
 }
+
+
+
+
+
+
+extension View {
+    func limitText(_ text: Binding<String>, to characterLimit: Int) -> some View {
+        self
+            .onChange(of: text.wrappedValue) { _ in
+                text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
+            }
+    }
+}
+
+extension Animation {
+    func `repeat`(while expression: Bool, autoreverses: Bool = true) -> Animation {
+        if expression {
+            return self.repeatForever(autoreverses: autoreverses)
+        } else {
+            return self
+        }
+    }
+}
+
+

@@ -8,8 +8,10 @@ struct TextWriter: View {
     @Binding var textSize: CGFloat
     @Binding var align: Int // 0: Left, 1: Center, 2: Right
     @Binding var margin: CGFloat
+    @Binding var textSpeed:CGFloat
     @State private var cumulativeFrameCounts: [Int] = [] // Safe initialization
     @State var render:Bool = false
+    
     var body: some View {
         ScrollView {
             Spacer().frame(height: 20)
@@ -22,7 +24,7 @@ struct TextWriter: View {
                         MultiImageSequence(letters: rows[index],
                                            delay: Double(cumulativeFrameCounts[safe: index] ?? index) * 0.005 , // Safe access
                                            divideScale: 220 / textSize,
-                                           margin: margin)
+                                           margin: margin, speed:$textSpeed)
                             .frame(height: textSize)
                         if align == 0 {
                             Spacer(minLength: 0)
@@ -73,7 +75,6 @@ struct TextWriter: View {
             totalFrames += row.reduce(0) { $0 + $1.frameCount }
           
             cumulativeFrameCounts.append(totalFrames) // Keep adding cumulative counts
-            print(992233, totalFrames)
         }
     }
 }
@@ -87,7 +88,7 @@ extension Array {
 
 
 import SwiftUI
-
+import Combine
 struct Letter: Equatable {
     let namePrefix: String
     let frameCount: Int
@@ -102,13 +103,18 @@ struct MultiImageSequence: View {
     @State private var currentFrame = 0
     @State private var letterIndex = 0
     @State private var isTimerActive = false
+    @State private var sss:CGFloat  =  0.005
     let letters: [Letter]
     let delay: Double
     let divideScale: CGFloat
     let margin: CGFloat// New margin property
-
-    let timer = Timer.publish(every: 0.005, on: .main, in: .common).autoconnect()
-
+    @Binding var speed:CGFloat
+    @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher>? = nil
+       
+    
+   // var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
+        //   Timer.publish(every: speed, on: .main, in: .common).autoconnect()
+      // }// Move timer to @State
     var body: some View {
         HStack(spacing: 0) {
             ForEach(0 ..< letters.count, id: \.self) { index in
@@ -121,7 +127,7 @@ struct MultiImageSequence: View {
            // print("onDisappear MultiImageSequence")
         }
         .onAppear {
-            
+            timer = Timer.publish(every: 0.005, on: .main, in: .common).autoconnect()
             isTimerActive = false
             letterIndex = 0
             currentFrame = 0
@@ -138,11 +144,17 @@ struct MultiImageSequence: View {
                 isTimerActive = true
             }
         }
-        .onReceive(timer) { _ in
-            if isTimerActive {
-                updateFrame()
-            }
+        .onChange(of: speed) { _ , newValue in
+            sss = newValue
+            timer = Timer.publish(every: speed, on: .main, in: .common).autoconnect()
+            
         }
+        .onReceive(timer ?? Timer.publish(every: speed, on: .main, in: .common).autoconnect()) { _ in
+                    if isTimerActive {
+                        updateFrame()
+                    }
+                }
+       
     }
 
 
@@ -167,6 +179,7 @@ struct MultiImageSequence: View {
         if frameNumber == 1 {
             return "___0001"
         }
+       
         return String(format: "\(sequence.namePrefix)%04d", frameNumber)
     }
 
@@ -199,7 +212,7 @@ struct MultiImageSequence: View {
             Letter(namePrefix: "jjj", frameCount: 16, w: 122, h: 242),
             Letter(namePrefix: "kkk", frameCount: 23, w: 111, h: 242),
             Letter(namePrefix: "lll", frameCount: 15, w: 89, h: 242),
-        ], delay: 1, divideScale: 8, margin:10)
+        ], delay: 1, divideScale: 8, margin:10, speed:.constant(0.005))
         .frame(height: 242 / 8)
 
         MultiImageSequence(letters: [
@@ -207,7 +220,7 @@ struct MultiImageSequence: View {
             Letter(namePrefix: "nnn", frameCount: 18, w: 117, h: 242),
             Letter(namePrefix: "yyy", frameCount: 14, w: 124, h: 242),
             Letter(namePrefix: "zzz", frameCount: 11, w: 101, h: 242),
-        ], delay: 6, divideScale: 4, margin:10)
+        ], delay: 6, divideScale: 4, margin:10, speed:.constant(0.005))
         .frame(height: 242 / 4)
     }
 }

@@ -9,19 +9,21 @@ struct Stylo: Codable {
     var tColor: Color
     var align: CGFloat = 1
     var bkImage: String = ""
+    var cat:String = ""
     
     // Conform to Codable for Color
     enum CodingKeys: CodingKey {
-        case text, textSize, bColor, tColor, align, bkImage
+        case text, textSize, bColor, tColor, align, bkImage, cat
     }
     
-    init(text: String, textSize: CGFloat = 30, bColor: Color, tColor: Color, align:CGFloat = 1, bkImage:String = "") {
+    init(text: String, textSize: CGFloat = 30, bColor: Color, tColor: Color, align:CGFloat = 1, bkImage:String = "", cat:String = "") {
         self.text = text
         self.textSize = textSize
         self.bColor = bColor
         self.tColor = tColor
         self.align = align
         self.bkImage = bkImage
+        self.cat = cat
     }
     
     // Custom encoding to handle Color
@@ -33,6 +35,7 @@ struct Stylo: Codable {
         try container.encode(UIColor(tColor).cgColor.components, forKey: .tColor)
         try container.encode(align, forKey: .align)
         try container.encode(bkImage, forKey: .bkImage)
+        try container.encode(cat, forKey: .cat)
     }
     
     // Custom decoding to handle Color
@@ -46,6 +49,7 @@ struct Stylo: Codable {
         tColor = Color(red: tColorComponents[0], green: tColorComponents[1], blue: tColorComponents[2])
         align = try container.decode(CGFloat.self, forKey: .align)
         bkImage = try container.decode(String.self, forKey:  .bkImage)
+        cat = try container.decode(String.self, forKey:  .cat)
     }
 }
 
