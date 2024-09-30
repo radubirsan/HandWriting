@@ -4,11 +4,32 @@
 //
 //  Created by radu on 29.08.2024.
 //
+struct LetterImage :Hashable {
+    var imageName: String
+    var verticalPadding: CGFloat
+    var horizontalPadding: CGFloat
+
+}
+
 
 import Foundation
 import UIKit
 import SwiftUI
 class Helper{
+    
+
+    static var BKimages: [LetterImage] = [
+         LetterImage(imageName: "letter_1", verticalPadding: 0, horizontalPadding: 0),
+         LetterImage(imageName: "letter_2", verticalPadding: 10, horizontalPadding: 60),
+         LetterImage(imageName: "letter_3", verticalPadding: 90, horizontalPadding: 10),
+         LetterImage(imageName: "letter_4", verticalPadding: 70, horizontalPadding: 70),
+         LetterImage(imageName: "letter_5", verticalPadding: 25, horizontalPadding: 25),
+         LetterImage(imageName: "letter_6", verticalPadding: 9, horizontalPadding: 9),
+         LetterImage(imageName: "letter_7", verticalPadding: 9, horizontalPadding: 9),
+         LetterImage(imageName: "letter_8", verticalPadding: 9, horizontalPadding: 9),
+         LetterImage(imageName: "letter_9", verticalPadding: 9, horizontalPadding: 9),
+         LetterImage(imageName: "letter_10", verticalPadding: 30, horizontalPadding: 35)
+     ]
     
     static var letters = [
         Letter(namePrefix: "___", frameCount: 4, w: 82, h: 242),
@@ -22,7 +43,6 @@ class Helper{
         Letter(namePrefix: "777", frameCount: 12, w: 120, h: 242),
         Letter(namePrefix: "888", frameCount: 15, w: 124, h: 242),
         Letter(namePrefix: "999", frameCount: 16, w: 141, h: 242),
-        
         Letter(namePrefix: "aaa", frameCount: 21, w: 125, h: 242),
         Letter(namePrefix: "bbb", frameCount: 21, w: 105, h: 242),
         Letter(namePrefix: "ccc", frameCount: 14, w: 78, h: 242),
@@ -49,7 +69,6 @@ class Helper{
         Letter(namePrefix: "xxx", frameCount: 16, w: 105, h: 242),
         Letter(namePrefix: "yyy", frameCount: 15, w: 124, h: 242),
         Letter(namePrefix: "zzz", frameCount: 12, w: 101, h: 242),
-        
         Letter(namePrefix: "AA", frameCount: 18, w: 144, h: 242),
         Letter(namePrefix: "BB", frameCount: 20, w: 141, h: 242),
         Letter(namePrefix: "CC", frameCount: 15, w: 125, h: 242),
@@ -85,31 +104,41 @@ class Helper{
         Letter(namePrefix: "hashtaghashtaghashtag", frameCount: 6, w: 97, h: 242),
         Letter(namePrefix: "dobledotdobledotdobledot", frameCount: 5, w: 90, h: 242),
         Letter(namePrefix: "linelineline", frameCount: 3, w: 78, h: 242),
-        
-
     
     ]
+    
+    static func getLetterVMargins(_ i: String) -> CGFloat {
+        return BKimages.first { $0.imageName == i }!.verticalPadding
+    }
+    static func getLetterHMargins(_ i: String) -> CGFloat {
+        var r  = BKimages.first { $0.imageName == i }!.horizontalPadding
+        //print("RRRRR" , r)
+        return r
+    }
+    
+    static public var horizontalPadding:CGFloat = 20
+    static public var verticalPadding:CGFloat = 20
     static public var size:CGFloat = 20
     static func postRequest() -> [String:String] {
          // do a post request and return post data
          return ["someData" : "someData"]
     }
     
-    static func parse(_ i: String) -> [[Letter]] {
+    static func parse(_ i: String) -> [Letter] {
         var input = i
        
         wrapTextIfNeeded(&input)
        
         // Split the input by newline while keeping empty lines
         let lines = input.components(separatedBy: "\n")
-        var allSequences: [[Letter]] = []
+        var allSequences: [Letter] = []
         
         for line in lines {
             // Handle lines that may be empty
             if line.isEmpty {
                 print("Added new LINE with 'x' for empty line")
                // let xSequence = ImageSequence(namePrefix: "x") // Adjust this to match your ImageSequence initializer
-                allSequences.append([letters.first! ])
+                allSequences.append(letters.first!)
                 continue
             }
             
@@ -118,7 +147,7 @@ class Helper{
             
             for l in lett {
                
-                print("ll", l)
+              //  print("ll cool J", l)
                 let namePrefix = l.replacingOccurrences(of: " ", with: "_")
                                   .replacingOccurrences(of: "!", with: "exclamation")
                                   .replacingOccurrences(of: "?", with: "question")
@@ -136,15 +165,13 @@ class Helper{
                 }
                 let expandedPrefix = String(repeating: namePrefix, count: count)
                 if let matchingSequence = letters.first(where: { $0.namePrefix == expandedPrefix }) {
-                    sequences.append(matchingSequence)
+                    allSequences.append(matchingSequence)
                 } else {
-                    print("No match found for: \(namePrefix)")
+                    print("No Match Found for: \(namePrefix)")
                 }
             }
             
-            if !sequences.isEmpty {
-                allSequences.append(sequences)
-            }
+            
         }
         
         return allSequences
@@ -187,18 +214,31 @@ class Helper{
        // print("texWidth:", size.width)
         return size.width
     }
-    
+    static func mapStyloToEditSTL(_ stylo:Stylo, _ editSTL:  EditStylo) {
+        editSTL.text = stylo.text
+        editSTL.textSize = stylo.textSize
+        editSTL.bColor = stylo.bColor
+        editSTL.tColor = stylo.tColor
+        editSTL.align = stylo.align
+        editSTL.bkImage = stylo.bkImage
+        editSTL.marginH = Helper.getLetterHMargins(stylo.bkImage)
+        editSTL.marginV = Helper.getLetterVMargins(stylo.bkImage)
+        editSTL.id = CGFloat.random(in: 1...1000)
+    }
     static func presentShareLink(_ s:Stylo, _ progress: Binding<Double> ) -> Task<Void, Never> {
         
        
       let task  = Task {
             var sequences = Helper.parse(s.text.trimmingCharacters(in: .whitespaces))
             var videoModel: VideoModel = VideoModel()
+                progress.wrappedValue = 0
             var savedVideoURL = await videoModel.saveModifiedVideo(sequences, s.bColor, s.tColor,
                                                                    .center,
                                                                    s.bkImage,
                                                                    quality: CGSize(width:719, height:719),
                                                                    fps:30,
+                                                                   marginV:0,
+                                                                   marginH:0,
                                                                    progressHandler: { value in
                                                                                   DispatchQueue.main.async {
                                                                                       progress.wrappedValue = value

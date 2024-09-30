@@ -8,13 +8,15 @@ class VideoModel: ObservableObject {
     let defaultFrameDuration = 0.04
   
    
-    func saveModifiedVideo(_ s: [[Letter]],
+    func saveModifiedVideo(_ s: [Letter],
                            _ bgColor: Color,
                            _ fgColor: Color,
                            _ alignment: TextAlignment,
                            _ bkgImage: String,
                            quality: CGSize,
                            fps:Int32,
+                           marginV:CGFloat,
+                           marginH:CGFloat,
                            progressHandler: @escaping (Double) -> Void) async -> URL? {
 
         guard let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -42,6 +44,7 @@ class VideoModel: ObservableObject {
             await withCheckedContinuation { continuation in
                 videoManager.createVideo(s, at: fileUrl, backgroundColor: bgcolor, foregroundColor: fgcolor,
                                          videoSize: quality, fps:fps, alignment: alignment, bkgImage: bkgImage,
+                                         marginV:marginV, marginH:marginH,
                                          completion: { success in
                     continuation.resume(returning: success)
                 },

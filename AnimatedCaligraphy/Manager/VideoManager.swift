@@ -42,27 +42,29 @@ class VideoManager {
         frameRate  = 0
     }
     
-    func createVideo(_ rows: [[Letter]], at fileUrl: URL,
+    func createVideo(_ letter: [Letter], at fileUrl: URL,
                         backgroundColor: CGColor,
                         foregroundColor: CGColor,
                         videoSize: CGSize,
                         fps:Int32,
                         alignment: TextAlignment,
                         bkgImage:String,
+                        marginV:CGFloat,
+                        marginH:CGFloat,
                         completion: ((Bool) -> Void)?,
                         progress: ((Double) -> Void)?) {
 
-           var frames = rows
+            var letters = letter
             let width = Int(videoSize.width)
             let height = Int(videoSize.height)
-            self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
-           print("createVideo ============", bkgImage, frames.count)
+           self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
            self.frameRate = fps
-          
-        var scaleFactor = CGFloat(height) / 2000.0
-        scaleFactor = scaleFactor * Helper.size / 40
-        
-       
+        let qualityScale = CGFloat(height) / 2000.0
+        var charScale = qualityScale * Helper.size / 40
+      
+            let marginV = marginV/365 * videoSize.height  // + (242 + 100) * charScale
+            let marginH = marginH/365 * videoSize.width
+       print("Margin Horizontal", marginH)
            let avOutputSettings: [String: Any] = [
                AVVideoCodecKey: AVVideoCodecType.h264,
                AVVideoWidthKey: NSNumber(value: Float(width)),
@@ -110,25 +112,18 @@ class VideoManager {
 
            assetWriter.startSession(atSourceTime: CMTime.zero)
         // Track total frame count to calculate progress
-          let totalFrames = frames.flatMap { $0 }.reduce(0) { $0 + $1.frameCount }
+          let totalFrames = letters.flatMap { $0 }.reduce(0) { $0 + $1.frameCount }
 
            assetWriterInput.requestMediaDataWhenReady(on: writerQueue) {
+              print("RequestMediaDataWhenReady to write video")
               
+
+               self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
                            var frameCount = 0
-                           var letterNr = 0
                            var strokeNr = 0
-                           var rowX: CGFloat
-                           var rowY = (242 + 100) * scaleFactor
+                         
 
-                           if alignment == .center {
-                               rowX = (CGFloat(width) - self.alignX(frames.first) * scaleFactor) / 2
-                           } else if alignment == .trailing {
-                               rowX = (CGFloat(width) - self.alignX(frames.first) * scaleFactor) / 2}
-                           else {
-                               rowX =  30
-                           }
-
-               while !frames.isEmpty && self.frameRate != 0{
+               while !letters.isEmpty && self.frameRate != 0{
                                if assetWriterInput.isReadyForMoreMediaData == false {
                                    print("more buffers need to be written.")
                                    Thread.sleep(forTimeInterval: 0.1)
@@ -136,107 +131,85 @@ class VideoManager {
 //  Initial code used break, moved to continue to try and fix a occasionally bug where video generation goes wrong some of the time
 //                                   break
                                }
-                       
-                          //  let presentationTime = CMTimeMultiply(CMTimeMake(value: 1, timescale: 30), multiplier: Int32(frameCount))
                                var presentationTime:CMTime
-                                    presentationTime = CMTimeMake(value: Int64(frameCount), timescale: self.frameRate) // at 120 fps playback has slow motion marked witch makes the beginning of the video run at double the speed
-                                  
-                               let point = CGPoint(x: Int(rowX + (frames.first![letterNr].x * scaleFactor)), y: height - Int(rowY))
+                                   presentationTime = CMTimeMake(value: Int64(frameCount), timescale: self.frameRate)
+                               var point = CGPoint(x: Int(marginH +  letters.first!.x / 365 * CGFloat(width)),
+                                                   y: Int( videoSize.height - (242 * charScale)  -  marginV - ( letters.first!.y / 365 * videoSize.height )))
+                  // print("Letter position",letters.first!.namePrefix, letters.first!.x ,letters.first!.y)
                                strokeNr += 1
-                               let img = String(format: "\(frames.first![letterNr].namePrefix)%04d", strokeNr)
+                               let img = String(format: "\(letters.first!.namePrefix)%04d", strokeNr)
                                let uiImage = UIImage(named: img)
-                               if self.bitmap == nil {
-                                   self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
-                               }
+                             
                                if let ui = uiImage {
                                    let pinkTint = UIColor(cgColor: foregroundColor)
+                                 
                                    var tintedImage = self.tintedImage(ui, with: pinkTint)
-                                   tintedImage = tintedImage!.resize(Int(tintedImage!.size.width * scaleFactor), Int(tintedImage!.size.height * scaleFactor))
+                                   let hhh = Int(tintedImage!.size.height * charScale)
+                                   let www = Int(tintedImage!.size.width * charScale)
+                                   tintedImage = tintedImage!.resize(www, hhh)
+                                   //point.y = point.y - hhh
                                    self.bitmap!.drawImage(tintedImage!.cgImage!, atPoint: point)
                                } else {
                                    print("cannot find", img)
                                }
-
-                               // Retry mechanism to handle append failures
-                               var success = false
-                               for attempt in 0..<3 { // Try up to 3 times
+                                    let pixelBuffer = self.bitmap!.ciImage!.cgImage!.cvPixelBuffer!
+                                    let success = self.tryAppendingBuffer(pixelBuffer, at: presentationTime, using: pixelBufferAdaptor)
                                    
-                                   //print(9999, self.bitmap!.ciImage!.cgImage!.cvPixelBuffer!)
-                                   if pixelBufferAdaptor.append(self.bitmap!.ciImage!.cgImage!.cvPixelBuffer!, 
-                                                                                  withPresentationTime: presentationTime) {
-                                       let currentTime = Date()
-                                       print("Frame \(img) appended at \(Calendar.current.component(.second, from: currentTime)), presentation time: \(presentationTime.seconds)")    //  let currentTime = Date()
-                                     //  print("Frame \(img) appended at \(Calendar.current.component(.second, from: currentTime)), presentation time: \(presentationTime.seconds)")
-                                       success = true
-                                       break
-                                   } else {
-                                       print("Retrying append operation (attempt \(attempt + 1))...")
-                                       Thread.sleep(forTimeInterval:  attempt  == 2 ? 5 : 0.1) // Small delay before retrying
+                                   if !success {
+                                       print("Failed to append pixel buffer at frame \(frameCount), presentation time: \(presentationTime.seconds)")
+                                       completion?(false)
+                                       return
                                    }
-                               }
+                              let currentProgress = Double(frameCount) / Double(totalFrames)
+                              DispatchQueue.main.async {
+                                  progress?(currentProgress) // Send progress to the caller
+                              }
 
-                               if !success {
-                                   print("Failed to append pixel buffer at frame \(frameCount), presentation time: \(presentationTime.seconds)")
-                                   completion?(false)
-                                   return
-                               }
-                               
-                               // Update progress
-                                          let currentProgress = Double(frameCount) / Double(totalFrames)
-                                          DispatchQueue.main.async {
-                                              progress?(currentProgress) // Send progress to the caller
-                                          }
-
-                               if strokeNr >= frames.first![letterNr].frameCount - 1 {
-                                   rowX += (frames.first![letterNr].w - 10) * scaleFactor
-                                   letterNr += 1
+                               if strokeNr >= letters.first!.frameCount - 1 {
+                                   letters.removeFirst()
                                    strokeNr = 0
                                }
 
-                               if letterNr >= frames.first!.count {
-                                   letterNr = 0
-                                   strokeNr = 0
-                                   frames.removeFirst()
-
-                                   if alignment == .center {
-                                       rowX = (CGFloat(width) - self.alignX(frames.first) * scaleFactor) / 2
-                                   } else if alignment == .trailing {
-                                       rowX = (CGFloat(width) - self.alignX(frames.first) * scaleFactor)
-                                   }
-                                   else {
-                                       rowX = 30
-                                   }
-
-                                   rowY += 242 * scaleFactor
-                               }
+                            
 
                                frameCount += 1
                            }
-
-                           if frames.isEmpty {
-                               assetWriterInput.markAsFinished()
-                               assetWriter.finishWriting {
-                                   print("writing finished")
-                                   DispatchQueue.main.async {
-                                       completion?(true)
-                                       return
-                                   }
-                               }
-                           }
-               else{
-                   print("HEHEH CANCEL", letterNr)
-                   assetWriterInput.markAsFinished()
-//                   DispatchQueue.main.async {
-//                       completion?(false)
-//                       return
-//                   }
-                     return
-                   
-               }
+               
+               self.finishWriting(letters: letters, assetWriterInput: assetWriterInput, assetWriter: assetWriter, completion: completion)
            }
-           self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage: bkgImage)
-           print("end")
+         
        }
+    
+    private func finishWriting(letters: [Letter], assetWriterInput: AVAssetWriterInput, assetWriter: AVAssetWriter, completion: ((Bool) -> Void)?) {
+           if letters.isEmpty {
+               assetWriterInput.markAsFinished()
+               assetWriter.finishWriting {
+                   print("writing finished")
+                   DispatchQueue.main.async {
+                       completion?(true)
+                   }
+               }
+           } else {
+               print("HEHEH CANCEL")
+               assetWriterInput.markAsFinished()
+           }
+       }
+
+    
+    // Helper function to retry pixel buffer append operation
+    func tryAppendingBuffer(_ pixelBuffer: CVPixelBuffer,
+                            at presentationTime: CMTime,
+                            using pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor) -> Bool {
+        for attempt in 0..<3 {
+            if pixelBufferAdaptor.append(pixelBuffer, withPresentationTime: presentationTime) {
+                return true
+            } else {
+                print("Retrying append operation (attempt \(attempt + 1))...")
+                Thread.sleep(forTimeInterval: attempt == 2 ? 5 : 0.1) // Adjust delay
+            }
+        }
+        return false
+    }
     
     func tintedImage(_ image: UIImage, with color: UIColor) -> UIImage? {
         // Start a graphics context of the same size as the image
@@ -276,23 +249,12 @@ class VideoManager {
     }
     
     func doWhileLoop( _ assetWriterInput:AVAssetWriterInput, 
-                      _ frames:[[Letter]],
+                      _ frames:[Letter],
                       _ frameDuration:CMTime,
                       _ pixelBufferAdaptor:AVAssetWriterInputPixelBufferAdaptor) {
         print(assetWriterInput, frameDuration)
     }
-    func alignX(_ s:[Letter]?) -> CGFloat {
-        
-        if let firstInnerArray = s {
-            let sumOfW = firstInnerArray.reduce(0) { sum, imageSequence in
-                return sum + imageSequence.w - 10
-            }
-            return sumOfW
-        } else {
-            return 0
-            print("The outer array is empty.")
-        }
-    }
+  
     
     func resetBitmap(_ w: Int, _ h: Int, backgroundColor: CGColor, bkgImage:String) {
         do {

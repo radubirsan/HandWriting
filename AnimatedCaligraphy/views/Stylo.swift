@@ -1,6 +1,18 @@
 import SwiftUI
 
-import SwiftUI
+@Observable 
+class EditStylo {
+    var text: String = ""
+    var textSize: CGFloat = 30
+    var bColor: Color = .red
+    var tColor: Color = .blue
+    var align: CGFloat = 1
+    var bkImage: String = ""
+    var cat:String = ""
+    var id:CGFloat = 0
+    var marginV:CGFloat = 30
+    var marginH:CGFloat = 30
+}
 
 struct Stylo: Codable {
     var text: String
@@ -10,13 +22,15 @@ struct Stylo: Codable {
     var align: CGFloat = 1
     var bkImage: String = ""
     var cat:String = ""
+    var id:CGFloat = 0
     
     // Conform to Codable for Color
     enum CodingKeys: CodingKey {
-        case text, textSize, bColor, tColor, align, bkImage, cat
+        case text, textSize, bColor, tColor, align, bkImage, cat, id
     }
     
-    init(text: String, textSize: CGFloat = 30, bColor: Color, tColor: Color, align:CGFloat = 1, bkImage:String = "", cat:String = "") {
+    init(text: String, textSize: CGFloat = 30, bColor: Color, tColor: Color, 
+         align:CGFloat = 1, bkImage:String = "", cat:String = "", id:CGFloat = 1) {
         self.text = text
         self.textSize = textSize
         self.bColor = bColor
@@ -24,6 +38,8 @@ struct Stylo: Codable {
         self.align = align
         self.bkImage = bkImage
         self.cat = cat
+        self.id = id
+       // print("Init Stylo", text, align)
     }
     
     // Custom encoding to handle Color
@@ -36,6 +52,7 @@ struct Stylo: Codable {
         try container.encode(align, forKey: .align)
         try container.encode(bkImage, forKey: .bkImage)
         try container.encode(cat, forKey: .cat)
+        try container.encode(id, forKey: .id)
     }
     
     // Custom decoding to handle Color
@@ -50,6 +67,7 @@ struct Stylo: Codable {
         align = try container.decode(CGFloat.self, forKey: .align)
         bkImage = try container.decode(String.self, forKey:  .bkImage)
         cat = try container.decode(String.self, forKey:  .cat)
+        id =  try container.decode(CGFloat.self, forKey: .id)
     }
 }
 

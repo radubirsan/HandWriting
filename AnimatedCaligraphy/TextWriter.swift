@@ -1,61 +1,53 @@
 import SwiftUI
 
-import SwiftUI
-
 struct TextWriter: View {
-    @Binding var inputString: String
-    @Binding var rows: [[Letter]]
+    @Binding var letters: [Letter]
     @Binding var textSize: CGFloat
-    @Binding var align: Int // 0: Left, 1: Center, 2: Right
-    @Binding var margin: CGFloat
+    var align: CGFloat // 0: Left, 1: Center, 2: Right
+    var marginV: CGFloat
+    var marginH: CGFloat
     @Binding var textSpeed:CGFloat
     @State private var cumulativeFrameCounts: [Int] = [] // Safe initialization
     @State var render:Bool = false
     
     var body: some View {
         ScrollView {
-            Spacer().frame(height: 20)
-            if !rows.isEmpty && render {
-                ForEach(0..<rows.count, id: \.self) { index in
-                    HStack {
-                        if align == 2 {
-                            Spacer(minLength: 0)
-                        }
-                        MultiImageSequence(letters: rows[index],
-                                           delay: Double(cumulativeFrameCounts[safe: index] ?? index) * 0.005 , // Safe access
+            if !letters.isEmpty && render {
+               // ForEach(0..<rows.count, id: \.self) { index in
+             
+                    
+                        MultiImageSequence(letters: letters,
+                                           delay: 0 , // Safe access
                                            divideScale: 220 / textSize,
-                                           margin: margin, speed:$textSpeed)
-                            .frame(height: textSize)
-                        if align == 0 {
-                            Spacer(minLength: 0)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: alignmentForIndex(align))
-                }
+                                           marginV: 0,
+                                           marginH: 0,
+                                           speed:$textSpeed)
+                            //.frame(height: textSize)
+                            .border(.green)
+                    .frame(width: 365 - marginH*2, height: 365 - marginV*2)
+                    .border(.red)
+                   // .frame(maxWidth: .infinity, alignment: alignmentForIndex(align))
+                //}
             } else {
                 Text("No sequences to display")
                     .foregroundColor(.red)
             }
-            Spacer()
+        }
+        .padding(.vertical, marginV)
+        .padding(.horizontal, marginH)
+        
+        .onChange(of: letters) { _, newValue in
+            print("Changed rows")
         }
         .onAppear {
-            print("onAppear TextWriter", inputString)
+            print("onAppear TextWriter")
             if(!render){
-                rows = Helper.parse(inputString.trimmingCharacters(in: .whitespaces))
-                calculateCumulativeFrameCounts() // Update cumulativeFrameCounts
                 render = true
             }
         }
-        .onChange(of: inputString) { _ , newValue in
-            
-            print("onChange TextWriter", newValue)
-                    // Update rows whenever inputString changes to always display the latest content
-                    rows = Helper.parse(newValue.trimmingCharacters(in: .whitespaces))
-                    calculateCumulativeFrameCounts()
-                }
     }
     
-    func alignmentForIndex(_ align: Int) -> Alignment {
+    func alignmentForIndex(_ align: CGFloat) -> Alignment {
         switch align {
         case 0:
             return .leading
@@ -66,17 +58,7 @@ struct TextWriter: View {
         }
     }
     
-    // This function calculates the cumulative frame counts
-    func calculateCumulativeFrameCounts() {
-        cumulativeFrameCounts = [0] // Initialize with first row having zero delay
-        var totalFrames = 0
-        
-        for row in rows {
-            totalFrames += row.reduce(0) { $0 + $1.frameCount }
-          
-            cumulativeFrameCounts.append(totalFrames) // Keep adding cumulative counts
-        }
-    }
+   
 }
 
 // Safe subscript extension to avoid out-of-bounds error
@@ -94,7 +76,8 @@ struct Letter: Equatable {
     let frameCount: Int
     let w: CGFloat
     let h: CGFloat
-    var x: CGFloat = 0
+    var x:CGFloat = 0
+    var y:CGFloat = 0
 }
 
 // Just One row of text
@@ -107,27 +90,23 @@ struct MultiImageSequence: View {
     let letters: [Letter]
     let delay: Double
     let divideScale: CGFloat
-    let margin: CGFloat// New margin property
+    let marginV: CGFloat// New margin property
+    let marginH: CGFloat//
     @Binding var speed:CGFloat
     @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher>? = nil
        
-    
-   // var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
-        //   Timer.publish(every: speed, on: .main, in: .common).autoconnect()
-      // }// Move timer to @State
     var body: some View {
-        HStack(spacing: 0) {
+        ZStack(alignment:.topLeading) {
             ForEach(0 ..< letters.count, id: \.self) { index in
                 strokeView(for: index)
-                    .offset(x: letters[index].x / divideScale)
+                    .offset(x: letters[index].x ,y: letters[index].y)
+                    .alignmentGuide(.top) { _ in 0 } // Align it to the top
+                    .alignmentGuide(.leading) { _ in 0 } // Align it to the leading edge
             }
         }
-        .padding(margin) // Apply the margin around the whole sequence
-        .onDisappear {
-           // print("onDisappear MultiImageSequence")
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
-            timer = Timer.publish(every: 0.005, on: .main, in: .common).autoconnect()
+            timer = Timer.publish(every: speed, on: .main, in: .common).autoconnect()
             isTimerActive = false
             letterIndex = 0
             currentFrame = 0
@@ -136,17 +115,19 @@ struct MultiImageSequence: View {
             }
         }
         .onChange(of: letters) { _, _ in
-            
+           
             isTimerActive = false
             letterIndex = 0
             currentFrame = 0
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 isTimerActive = true
+                print("Line x",letters.count,  delay)
             }
         }
         .onChange(of: speed) { _ , newValue in
-            sss = newValue
+            speed = newValue
             timer = Timer.publish(every: speed, on: .main, in: .common).autoconnect()
+            print("Speed", speed)
             
         }
         .onReceive(timer ?? Timer.publish(every: speed, on: .main, in: .common).autoconnect()) { _ in
@@ -154,7 +135,6 @@ struct MultiImageSequence: View {
                         updateFrame()
                     }
                 }
-       
     }
 
 
@@ -205,22 +185,3 @@ struct MultiImageSequence: View {
     }
 }
 
-#Preview {
-    VStack {
-        MultiImageSequence(letters: [
-            Letter(namePrefix: "iii", frameCount: 11, w: 67, h: 242),
-            Letter(namePrefix: "jjj", frameCount: 16, w: 122, h: 242),
-            Letter(namePrefix: "kkk", frameCount: 23, w: 111, h: 242),
-            Letter(namePrefix: "lll", frameCount: 15, w: 89, h: 242),
-        ], delay: 1, divideScale: 8, margin:10, speed:.constant(0.005))
-        .frame(height: 242 / 8)
-
-        MultiImageSequence(letters: [
-            Letter(namePrefix: "mmm", frameCount: 20, w: 162, h: 242),
-            Letter(namePrefix: "nnn", frameCount: 18, w: 117, h: 242),
-            Letter(namePrefix: "yyy", frameCount: 14, w: 124, h: 242),
-            Letter(namePrefix: "zzz", frameCount: 11, w: 101, h: 242),
-        ], delay: 6, divideScale: 4, margin:10, speed:.constant(0.005))
-        .frame(height: 242 / 4)
-    }
-}

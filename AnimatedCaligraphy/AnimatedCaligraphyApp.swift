@@ -1,11 +1,5 @@
-//
-//  AnimatedCaligraphyApp.swift
-//  AnimatedCaligraphy
-//
-//  Created by radu on 12.08.2024.
-//
 
-import SwiftUI
+/// AFTER
 
 
 import SwiftUI
@@ -27,17 +21,34 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
 }
 
-
+import RevenueCat
+import RevenueCatUI
 
 @main
 
 struct AnimatedCaligraphyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+  
+    
+    init() {
+        Purchases.configure(withAPIKey: "appl_PNsIMlsRkQnhMvuuecfhnBewYdK") // Inky key
+        //Purchases.configure(withAPIKey: "appl_DkeTZOfKtpnWLdedTjTRRLWFTZn")
+        Purchases.logLevel = .debug
+        
+        
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView().environmentObject(Model.shared)
+            ContentView().environment(Model.shared)
+              //  .presentPaywallIfNeeded(requiredEntitlementIdentifier: "InkyProProductID") // Inky Identifier
+                .presentPaywallIfNeeded(requiredEntitlementIdentifier: "LipyPro")
+             //
           
            
         }
     }
 }
+
+
+

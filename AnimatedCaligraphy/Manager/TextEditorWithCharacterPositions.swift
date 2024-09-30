@@ -3,19 +3,42 @@ import SwiftUI
 struct TextEditorWithCharacterPositions: UIViewRepresentable {
     @Binding var text: String
     var textScale: CGFloat
+    var align: CGFloat
+    var color: Color
+    var refreshTrigger: Bool
     var onCharacterPositions: ([CGRect]) -> Void
 
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
         textView.isEditable = true
+        textView.textColor = Color.convert(color)
         textView.isScrollEnabled = true
+        textView.backgroundColor  = .clear
         textView.font = UIFont(name: "LeckerliOne-Regular", size: textScale) // Set the custom font
-              textView.delegate = context.coordinator
-        return textView
+        textView.delegate = context.coordinator
+       
+        
+        
+        // Apply reduced line spacing
+              let paragraphStyle = NSMutableParagraphStyle()
+              paragraphStyle.lineSpacing = -11.0 // Negative values reduce spacing, positive values increase spacing
+
+              let attributes: [NSAttributedString.Key: Any] = [
+                  .paragraphStyle: paragraphStyle,
+                  .foregroundColor:  Color.convert(color)
+              ]
+
+              textView.attributedText = NSAttributedString(string: text, attributes: attributes)
+              
+              return textView
     }
 
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.text = text
+        uiView.font = UIFont(name: "LeckerliOne-Regular", size: textScale)
+        uiView.textAlignment  = align == 0 ? .left : align == 1 ? .center : .right
+        
+        uiView.textColor = Color.convert(color)
         updateCharacterPositions(in: uiView)
     }
 
@@ -63,37 +86,4 @@ struct TextEditorWithCharacterPositions: UIViewRepresentable {
     }
 }
 
-struct ContentViewX: View {
-    @State private var text = "Hello, world!"
-    @State private var characterPositions: [CGRect] = []
-    @State private var textScale:CGFloat = 20
-    var body: some View {
-        VStack {
-            // Custom TextEditor that tracks character positions
-            TextEditorWithCharacterPositions(text: $text, textScale:textScale) { positions in
-                self.characterPositions = positions
-            }
-            
-            .frame(height: 200)
-            .border(Color.gray)
 
-            // List the position and size of each character entered (for debugging purposes)
-            ScrollView {
-                VStack(alignment: .leading) {
-                    ForEach(characterPositions.indices, id: \.self) { index in
-                        let rect = characterPositions[index]
-                        Text("Character \(index + 1): Position (\(rect.origin.x), \(rect.origin.y)), Size: \(rect.size.width) x \(rect.size.height)")
-                    }
-                }
-            }
-        }
-        .padding()
-    }
-}
-
-
-
-#Preview
-{
-    ContentViewX()
-}
