@@ -33,8 +33,10 @@ import FirebaseAuth
 import RevenueCat
 import RevenueCatUI
 
-
+import Network
 struct ContentView: View {
+    
+    @State private var networkMonitor = NetworkMonitor()
     @Environment(Model.self) var model: Model  // Use the shared model
     @State private var tabSelection = 1
     @State private var styloSelection = 1
@@ -44,60 +46,64 @@ struct ContentView: View {
     @State private var player2 = Player()
     var editSTL:EditStylo = EditStylo()
     var body: some View {
-    
-        NavigationView {
-            TabView(selection: $tabSelection) {
-                
-                // Pass model.quotes to the Favorites view for Explore
-                Favorites(selectIDX: $styloSelection,
-                          tabSelection: $tabSelection,
-                           showAll: true, columns: 1)
+        if(networkMonitor.isConnected) {
+            NavigationView {
+                TabView(selection: $tabSelection) {
+                    
+                    // Pass model.quotes to the Favorites view for Explore
+                    Favorites(selectIDX: $styloSelection,
+                              tabSelection: $tabSelection,
+                              showAll: true, columns: 1)
                     .tabItem {
                         Label("Explore", systemImage: "magnifyingglass")
                     }
                     .tag(1)
-               
-                // Editor View with videoModel
-                EditorView(editSTL:editSTL, videoModel:videoModel)
-                    .tabItem {
-                        Label("Editor", systemImage: "square.and.pencil")
-                    }
-                    .tag(3)
-                
-                // Pass model.quotes to Favorites for Favorite quotes
-                Favorites(selectIDX: $styloSelection,
-                          tabSelection: $tabSelection,
-                           showAll: false, columns: 2 )
+                    
+                    // Editor View with videoModel
+                    EditorView(editSTL:editSTL, videoModel:videoModel)
+                        .tabItem {
+                            Label("Editor", systemImage: "square.and.pencil")
+                        }
+                        .tag(3)
+                    
+                    // Pass model.quotes to Favorites for Favorite quotes
+                    Favorites(selectIDX: $styloSelection,
+                              tabSelection: $tabSelection,
+                              showAll: false, columns: 2 )
                     .tabItem {
                         Label("Favorites", systemImage: "star")
                     }
                     .tag(2)
-            }
-            .onChange(of: tabSelection) { _, newSelection in
-                if newSelection == 3 {  // When switching to the Editor tab
-                    let selectedStylo = model.quotes[styloSelection]
-                    print("tab3", selectedStylo.text)
-                    stylo = Stylo(text: selectedStylo.text,
-                                  textSize: selectedStylo.textSize,
-                                  bColor: selectedStylo.bColor,
-                                  tColor: selectedStylo.tColor,
-                                  align: selectedStylo.align,
-                                  bkImage: selectedStylo.bkImage)
-                    Helper.size = selectedStylo.textSize
-                    Helper.mapStyloToEditSTL(stylo, self.editSTL)
-                    print("Genereate EditStye", selectedStylo.tColor)
-                    
-                   
-                } else {
-                    stylo = Stylo(text: "X",
-                                  textSize: 2,
-                                  bColor: .red,
-                                  tColor: .blue,
-                                  align: 4,
-                                  bkImage: "")
-                    Helper.size = model.quotes[styloSelection].textSize
+                }
+                .onChange(of: tabSelection) { _, newSelection in
+                    if newSelection == 3 {  // When switching to the Editor tab
+                        let selectedStylo = model.quotes[styloSelection]
+                        print("tab3", selectedStylo.text)
+                        stylo = Stylo(text: selectedStylo.text,
+                                      textSize: selectedStylo.textSize,
+                                      bColor: selectedStylo.bColor,
+                                      tColor: selectedStylo.tColor,
+                                      align: selectedStylo.align,
+                                      bkImage: selectedStylo.bkImage)
+                        Helper.size = selectedStylo.textSize
+                        Helper.mapStyloToEditSTL(stylo, self.editSTL)
+                        print("Genereate EditStye", selectedStylo.tColor)
+                        
+                        
+                    } else {
+                        stylo = Stylo(text: "X",
+                                      textSize: 2,
+                                      bColor: .red,
+                                      tColor: .blue,
+                                      align: 4,
+                                      bkImage: "")
+                        Helper.size = model.quotes[styloSelection].textSize
+                    }
                 }
             }
+        }
+        else {
+            NetworkUnavailableView()
         }
     }
 }

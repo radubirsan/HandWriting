@@ -232,7 +232,7 @@ struct EditorView: View {
                     Text(isFocused ? "Done" : "Edit")
                     //Image(systemName: isFocused ? "" : "pencil")
                 }
-                .frame(width:73, height: 40 )
+                .frame(width:60, height: 40 )
                 .padding(7)
                 .background(Color.blue)
                 .foregroundColor(.white)
@@ -328,13 +328,13 @@ struct EditorView: View {
                         Text(isSaving ? "Cancel" : "Send").bold()
                        // Image(systemName: isSaving ? "timelapse" : "paperplane")
                   //  }
-                    .frame(width:73, height: 40)
+                    .frame(width:60, height: 40)
                     .padding(7)
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
-                .padding(7)
+                
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
    

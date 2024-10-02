@@ -28,21 +28,18 @@ import RevenueCatUI
 
 struct AnimatedCaligraphyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-  
-    
+
     init() {
-        Purchases.configure(withAPIKey: "appl_PNsIMlsRkQnhMvuuecfhnBewYdK") // Inky key
+        //Purchases.configure(withAPIKey: "appl_PNsIMlsRkQnhMvuuecfhnBewYdK") // Inky key
         //Purchases.configure(withAPIKey: "appl_DkeTZOfKtpnWLdedTjTRRLWFTZn")
-        Purchases.logLevel = .debug
-        
-        
+        //Purchases.logLevel = .debug
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView().environment(Model.shared)
               //  .presentPaywallIfNeeded(requiredEntitlementIdentifier: "InkyProProductID") // Inky Identifier
-                .presentPaywallIfNeeded(requiredEntitlementIdentifier: "LipyPro")
+               // .presentPaywallIfNeeded(requiredEntitlementIdentifier: "LipyPro")
              //
           
            

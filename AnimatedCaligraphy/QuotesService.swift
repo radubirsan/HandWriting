@@ -14,10 +14,11 @@ class QuotesService:ObservableObject {
         //let snapshot2 = try await Firestore.firestore().collection("quotes").getDocuments()
         let snapshot2 = try await Firestore.firestore().collection("FirstCollection").getDocuments()
         let documents = snapshot2.documents
-        
+        print("Get QUOTES")
         for doc in documents {
             guard let qqq = try? doc.data(as:Quote.self)  else {  print("Cannot find this QUOTE 👚 doc");return q}
-            var s:Stylo =  Stylo(text:  qqq.text.replacingOccurrences(of: "\\n", with: "\n"), 
+            print("GOT QUOTES")
+            var s:Stylo =  Stylo(text:  qqq.text.replacingOccurrences(of: "\\n", with: "\n"),
                                  textSize: CGFloat(Double(qqq.textSize) ?? 30),
                                  bColor: Color(hex: qqq.bColor) ?? .red,
                                  tColor: Color(hex: qqq.tColor) ?? .orange,

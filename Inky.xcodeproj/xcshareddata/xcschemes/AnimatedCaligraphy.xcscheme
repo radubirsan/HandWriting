@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "17D7D9AC2C6A153400657426"
-               BuildableName = "AnimatedCaligraphy.app"
-               BlueprintName = "AnimatedCaligraphy"
-               ReferencedContainer = "container:AnimatedCaligraphy.xcodeproj">
+               BuildableName = "Inky.app"
+               BlueprintName = "Inky"
+               ReferencedContainer = "container:Inky.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "17D7D9AC2C6A153400657426"
-            BuildableName = "AnimatedCaligraphy.app"
-            BlueprintName = "AnimatedCaligraphy"
-            ReferencedContainer = "container:AnimatedCaligraphy.xcodeproj">
+            BuildableName = "Inky.app"
+            BlueprintName = "Inky"
+            ReferencedContainer = "container:Inky.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -82,9 +82,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "17D7D9AC2C6A153400657426"
-            BuildableName = "AnimatedCaligraphy.app"
-            BlueprintName = "AnimatedCaligraphy"
-            ReferencedContainer = "container:AnimatedCaligraphy.xcodeproj">
+            BuildableName = "Inky.app"
+            BlueprintName = "Inky"
+            ReferencedContainer = "container:Inky.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
