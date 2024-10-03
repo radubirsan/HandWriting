@@ -19,7 +19,7 @@ class Helper{
     
 
     static var BKimages: [LetterImage] = [
-         LetterImage(imageName: "letter_1", verticalPadding: 0, horizontalPadding: 0),
+         LetterImage(imageName: "letter_1", verticalPadding: 12, horizontalPadding: 12),
          LetterImage(imageName: "letter_2", verticalPadding: 10, horizontalPadding: 60),
          LetterImage(imageName: "letter_3", verticalPadding: 90, horizontalPadding: 10),
          LetterImage(imageName: "letter_4", verticalPadding: 70, horizontalPadding: 70),
@@ -111,7 +111,7 @@ class Helper{
         return BKimages.first { $0.imageName == i }!.verticalPadding
     }
     static func getLetterHMargins(_ i: String) -> CGFloat {
-        var r  = BKimages.first { $0.imageName == i }!.horizontalPadding
+        let r  = BKimages.first { $0.imageName == i }!.horizontalPadding
         //print("RRRRR" , r)
         return r
     }

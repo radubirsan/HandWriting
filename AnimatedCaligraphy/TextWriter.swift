@@ -28,10 +28,10 @@ struct TextWriter: View {
                     .border(.red)
                    // .frame(maxWidth: .infinity, alignment: alignmentForIndex(align))
                 //}
-            } else {
-                Text("No sequences to display")
-                    .foregroundColor(.red)
-            }
+            }// else {
+              //  Text("Tap to edit")
+               //     .foregroundColor(.red)
+           // }
         }
         .padding(.vertical, marginV)
         .padding(.horizontal, marginH)

@@ -77,27 +77,33 @@ struct ContentView: View {
                 }
                 .onChange(of: tabSelection) { _, newSelection in
                     if newSelection == 3 {  // When switching to the Editor tab
-                        let selectedStylo = model.quotes[styloSelection]
+                        
+                        var selectedStylo:Stylo = Stylo(text: "",
+                                                        textSize: 40,
+                                                        bColor:.red,
+                                                        tColor:Color(hex: "#ff00ff"),
+                                                        align: 0,
+                                                        bkImage: "letter_1")
+                        
+                        if ( styloSelection != 999) {
+                            selectedStylo = model.quotes[styloSelection]
+                        }
+                      
                         print("tab3", selectedStylo.text)
-                        stylo = Stylo(text: selectedStylo.text,
-                                      textSize: selectedStylo.textSize,
-                                      bColor: selectedStylo.bColor,
-                                      tColor: selectedStylo.tColor,
-                                      align: selectedStylo.align,
-                                      bkImage: selectedStylo.bkImage)
+                        
                         Helper.size = selectedStylo.textSize
-                        Helper.mapStyloToEditSTL(stylo, self.editSTL)
+                        Helper.mapStyloToEditSTL(selectedStylo, self.editSTL)
                         print("Genereate EditStye", selectedStylo.tColor)
                         
                         
                     } else {
-                        stylo = Stylo(text: "X",
-                                      textSize: 2,
-                                      bColor: .red,
-                                      tColor: .blue,
-                                      align: 4,
-                                      bkImage: "")
-                        Helper.size = model.quotes[styloSelection].textSize
+//                        stylo = Stylo(text: "X",
+//                                      textSize: 2,
+//                                      bColor: .red,
+//                                      tColor: .blue,
+//                                      align: 4,
+//                                      bkImage: "")
+//                        Helper.size = model.quotes[styloSelection].textSize
                     }
                 }
             }
@@ -138,7 +144,7 @@ class Model {
 extension View {
     func limitText(_ text:String, to characterLimit: Int) -> some View {
         self
-            .onChange(of: text) { _ in
+            .onChange(of: text) { _ , _  in
               //  text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
             }
     }

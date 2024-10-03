@@ -100,12 +100,19 @@ struct EditorView: View {
             editSTL.tColor = new
         }
         .onChange(of: editSTL.id) {
-            print("STYLO EDIT", editSTL.id ,editSTL.marginV)
+            print("STYLO EDIT", Int(Date().timeIntervalSince1970))
             selectedTextSize = Int(editSTL.textSize)
             selectedAlignment = Int(editSTL.align)
             fgColor = editSTL.tColor
 //            marginV = editSTL.marginV
 //            marginH = editSTL.marginH
+            if(editSTL.text == "") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isEditing  = true
+                    isFocused = true
+                    print("DispatchQueue STYLO EDIT" , Int(Date().timeIntervalSince1970))
+                }
+            }
             
         }
         .onChange(of: selectedTextSize) { _, new in
@@ -328,7 +335,7 @@ struct EditorView: View {
                         Text(isSaving ? "Cancel" : "Send").bold()
                        // Image(systemName: isSaving ? "timelapse" : "paperplane")
                   //  }
-                    .frame(width:60, height: 40)
+                    .frame(width:63, height: 40)
                     .padding(7)
                     .background(Color.blue)
                     .foregroundColor(.white)
@@ -460,7 +467,7 @@ struct EditorView: View {
             }
             else if (quality == .sd60) {
                 fps = 60
-                var size = CGSize(width: 719, height: 719)
+                size = CGSize(width: 719, height: 719)
             }
             else if(quality == .hd60 ) {
                 fps = 60

@@ -70,6 +70,7 @@
 		17DF24B92C98195000B1A613 /* TextEditorWithCharacterPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */; };
 		17DF24BC2C98446800B1A613 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 17DF24BB2C98446800B1A613 /* RevenueCat */; };
 		17DF24BE2C98446800B1A613 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 17DF24BD2C98446800B1A613 /* RevenueCatUI */; };
+		17E6291F2CAE46D70028C94A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 17E6291E2CAE46D70028C94A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +115,7 @@
 		17D7D9F62C6CA3C400657426 /* xxx0010.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = xxx0010.png; sourceTree = "<group>"; };
 		17D7D9F72C6CA3C400657426 /* xxx0011.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = xxx0011.png; sourceTree = "<group>"; };
 		17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEditorWithCharacterPositions.swift; sourceTree = "<group>"; };
+		17E6291E2CAE46D70028C94A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +216,7 @@
 		17D7D9AF2C6A153400657426 /* AnimatedCaligraphy */ = {
 			isa = PBXGroup;
 			children = (
+				17E6291E2CAE46D70028C94A /* PrivacyInfo.xcprivacy */,
 				17A23A842CAD524E0033E2F6 /* _archive */,
 				17CC91EF2C802BC30045C787 /* views */,
 				1758F98D2C78531800850D01 /* Info.plist */,
@@ -362,6 +365,7 @@
 				17D7D9FD2C6CA3C400657426 /* xxx0007.png in Resources */,
 				17D7D9F82C6CA3C400657426 /* xxx0008.png in Resources */,
 				17D7DA012C6CA3C400657426 /* xxx0002.png in Resources */,
+				17E6291F2CAE46D70028C94A /* PrivacyInfo.xcprivacy in Resources */,
 				17D7DA072C6CA3C400657426 /* xxx0011.png in Resources */,
 				17D7D9FF2C6CA3C400657426 /* xxx0016.png in Resources */,
 				175970372CAD446000A7937C /* GoogleService-Info.plist in Resources */,
@@ -526,13 +530,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Inky.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20240902;
+				CURRENT_PROJECT_VERSION = 202409031;
 				DEVELOPMENT_ASSET_PATHS = "\"AnimatedCaligraphy/Preview Content\"";
 				DEVELOPMENT_TEAM = 4GLZUW75SU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnimatedCaligraphy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hand Write";
+				INFOPLIST_KEY_CFBundleDisplayName = "Fountain Pen";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Photo Library Usage needed";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Need access to save generated videos";
@@ -564,13 +568,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Inky.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20240902;
+				CURRENT_PROJECT_VERSION = 202409031;
 				DEVELOPMENT_ASSET_PATHS = "\"AnimatedCaligraphy/Preview Content\"";
 				DEVELOPMENT_TEAM = 4GLZUW75SU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AnimatedCaligraphy/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Hand Write";
+				INFOPLIST_KEY_CFBundleDisplayName = "Fountain Pen";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Photo Library Usage needed";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Need access to save generated videos";

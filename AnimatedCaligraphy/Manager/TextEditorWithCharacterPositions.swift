@@ -9,7 +9,7 @@ struct TextEditorWithCharacterPositions: UIViewRepresentable {
     var onCharacterPositions: ([CGRect]) -> Void
 
     func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
+        let textView = UITextView(usingTextLayoutManager: false)
         textView.isEditable = true
         textView.textColor = Color.convert(color)
         textView.isScrollEnabled = true

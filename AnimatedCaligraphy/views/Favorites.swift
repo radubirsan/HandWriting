@@ -78,7 +78,25 @@ struct Favorites: View {
                 }
                 .padding()
             }
-        }.onTapGesture {
+        }
+        .safeAreaInset(edge: .bottom, alignment: .trailing) {
+            Button(action: {
+                // Navigate to the edit view when tapped
+                selectIDX = 999
+                tabSelection = 3 // Assuming tabSelection = 3 is the Edit view
+            }) {
+                Image(systemName: "plus")
+                    .resizable()
+                    .frame(width: 26, height: 26) // 50x50 is half of 100x100 (original size)
+                    .foregroundColor(.white)
+                    .padding(14)
+                    .background(Color.blue)
+                    .cornerRadius(21) // Rounded corners (half of width/height for a circle)
+                    .shadow(radius: 5)
+            }
+            .padding([.bottom, .trailing], 20) // Adjust the padding to move it to bottom-right
+        }
+        .onTapGesture {
             hideKeyboard()
         }
         .safeAreaInset(edge: .bottom, alignment: isSaving ? .center : .trailing){
