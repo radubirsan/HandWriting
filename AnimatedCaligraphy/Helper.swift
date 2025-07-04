@@ -143,7 +143,6 @@ class Helper{
             }
             
             let lett = line.map { String($0) }
-            var sequences: [Letter] = []
             
             for l in lett {
                

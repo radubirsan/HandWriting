@@ -60,7 +60,7 @@ class VideoManager {
            self.resetBitmap(width, height, backgroundColor: backgroundColor, bkgImage:bkgImage)
            self.frameRate = fps
         let qualityScale = CGFloat(height) / 2000.0
-        var charScale = qualityScale * Helper.size / 40
+        let charScale = qualityScale * Helper.size / 40
       
             let marginV = marginV/365 * videoSize.height  // + (242 + 100) * charScale
             let marginH = marginH/365 * videoSize.width
@@ -112,7 +112,7 @@ class VideoManager {
 
            assetWriter.startSession(atSourceTime: CMTime.zero)
         // Track total frame count to calculate progress
-          let totalFrames = letters.flatMap { $0 }.reduce(0) { $0 + $1.frameCount }
+          let totalFrames = letters.compactMap { $0 }.reduce(0) { $0 + $1.frameCount }
 
            assetWriterInput.requestMediaDataWhenReady(on: writerQueue) {
               print("RequestMediaDataWhenReady to write video")

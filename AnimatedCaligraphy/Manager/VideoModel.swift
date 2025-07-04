@@ -36,11 +36,10 @@ class VideoModel: ObservableObject {
         let fgcolor = fgUIColor.cgColor
 
         
+        
+        
+        
         let success = await withTaskCancellationHandler {
-                // Code to execute when the task is cancelled
-                videoManager.cancel()  // Assuming videoManager has a cancel method
-        } operation: {
-            
             await withCheckedContinuation { continuation in
                 videoManager.createVideo(s, at: fileUrl, backgroundColor: bgcolor, foregroundColor: fgcolor,
                                          videoSize: quality, fps:fps, alignment: alignment, bkgImage: bkgImage,
@@ -53,7 +52,13 @@ class VideoModel: ObservableObject {
                     progressHandler(progress)
                 })
             }
+        } onCancel: {
+            videoManager.cancel()
         }
+        
+        
+        
+       
 
         if success {
             print("Saving to photo library", fileUrl)
