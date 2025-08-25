@@ -23,9 +23,9 @@ struct TextWriter: View {
                                            marginH: 0,
                                            speed:$textSpeed)
                             //.frame(height: textSize)
-                            .border(.green)
+                            // .border(.green)
                     .frame(width: 365 - marginH*2, height: 365 - marginV*2)
-                    .border(.red)
+                   // .border(.red)
                    // .frame(maxWidth: .infinity, alignment: alignmentForIndex(align))
                 //}
             }// else {

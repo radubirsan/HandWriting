@@ -21,8 +21,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
 }
 
-import RevenueCat
-import RevenueCatUI
+// import RevenueCat
+// import RevenueCatUI
 
 @main
 

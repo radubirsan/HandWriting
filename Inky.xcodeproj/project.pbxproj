@@ -68,8 +68,6 @@
 		17D7DA062C6CA3C400657426 /* xxx0010.png in Resources */ = {isa = PBXBuildFile; fileRef = 17D7D9F62C6CA3C400657426 /* xxx0010.png */; };
 		17D7DA072C6CA3C400657426 /* xxx0011.png in Resources */ = {isa = PBXBuildFile; fileRef = 17D7D9F72C6CA3C400657426 /* xxx0011.png */; };
 		17DF24B92C98195000B1A613 /* TextEditorWithCharacterPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DF24B82C98195000B1A613 /* TextEditorWithCharacterPositions.swift */; };
-		17DF24BC2C98446800B1A613 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 17DF24BB2C98446800B1A613 /* RevenueCat */; };
-		17DF24BE2C98446800B1A613 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 17DF24BD2C98446800B1A613 /* RevenueCatUI */; };
 		17E6291F2CAE46D70028C94A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 17E6291E2CAE46D70028C94A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -130,14 +128,12 @@
 				171C67502C8EAD95007BCE0F /* FirebaseStorageCombine-Community in Frameworks */,
 				171C674C2C8EAD95007BCE0F /* FirebaseRemoteConfig in Frameworks */,
 				171C67362C8EAD95007BCE0F /* FirebaseDatabase in Frameworks */,
-				17DF24BC2C98446800B1A613 /* RevenueCat in Frameworks */,
 				171C67382C8EAD95007BCE0F /* FirebaseDynamicLinks in Frameworks */,
 				171C67262C8EAD95007BCE0F /* FirebaseAnalytics in Frameworks */,
 				171C67282C8EAD95007BCE0F /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				17D0802E2C75E45700571F8B /* Bitmap in Frameworks */,
 				171C673A2C8EAD95007BCE0F /* FirebaseFirestore in Frameworks */,
 				171C67482C8EAD95007BCE0F /* FirebaseMessaging in Frameworks */,
-				17DF24BE2C98446800B1A613 /* RevenueCatUI in Frameworks */,
 				171C67442C8EAD95007BCE0F /* FirebaseInstallations in Frameworks */,
 				171C67402C8EAD95007BCE0F /* FirebaseFunctionsCombine-Community in Frameworks */,
 				171C672C2C8EAD95007BCE0F /* FirebaseAppCheck in Frameworks */,
@@ -300,8 +296,6 @@
 				171C674D2C8EAD95007BCE0F /* FirebaseStorage */,
 				171C674F2C8EAD95007BCE0F /* FirebaseStorageCombine-Community */,
 				171C67512C8EAD95007BCE0F /* FirebaseVertexAI-Preview */,
-				17DF24BB2C98446800B1A613 /* RevenueCat */,
-				17DF24BD2C98446800B1A613 /* RevenueCatUI */,
 			);
 			productName = AnimatedCaligraphy;
 			productReference = 17D7D9AD2C6A153400657426 /* Inky.app */;
@@ -334,7 +328,6 @@
 			packageReferences = (
 				17D0802C2C75E45700571F8B /* XCRemoteSwiftPackageReference "Bitmap" */,
 				171C67242C8EAD95007BCE0F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				17DF24BA2C98446800B1A613 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 17D7D9AE2C6A153400657426 /* Products */;
 			projectDirPath = "";
@@ -544,7 +537,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -583,7 +576,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -639,14 +632,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.3.1;
-			};
-		};
-		17DF24BA2C98446800B1A613 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.3.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -771,16 +756,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 17D0802C2C75E45700571F8B /* XCRemoteSwiftPackageReference "Bitmap" */;
 			productName = Bitmap;
-		};
-		17DF24BB2C98446800B1A613 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 17DF24BA2C98446800B1A613 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		17DF24BD2C98446800B1A613 /* RevenueCatUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 17DF24BA2C98446800B1A613 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

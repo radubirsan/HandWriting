@@ -28,9 +28,7 @@ struct Favorites: View {
            case love = "Love"
            case money = "Money"
            case invite = "Invite"
-           case flyer = "Flyer"
-           case cupon = "Coupon"
-           case other = "Other" // You can add more filter options as needed
+
        }
 
     var body: some View {

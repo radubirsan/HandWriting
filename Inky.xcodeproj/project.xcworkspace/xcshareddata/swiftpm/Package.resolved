@@ -1,4 +1,5 @@
 {
+  "originHash" : "d368a8b120e7bacf7c992ce06ccd91ebb36fc80a332cdda79410d4223cb8b5c0",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -118,15 +119,6 @@
       }
     },
     {
-      "identity" : "purchases-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-ios.git",
-      "state" : {
-        "revision" : "dabbf506344b6f924b44bdfabbaec96bc7943d5d",
-        "version" : "5.3.3"
-      }
-    },
-    {
       "identity" : "swift-protobuf",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
@@ -145,5 +137,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
