@@ -14,7 +14,6 @@ struct EditorView: View {
     @State private var progress: Double = 0.0
     @State private var savedVideoURL: URL? = nil
     @State private var lastCharacter: String = ""
-    @State private var containerWidth2: CGFloat = 0
     @State var bgColor = Color.red
     @State var bgColor2 = Color.red
     @State private var saveTask: Task<Void, Never>? = nil
@@ -28,6 +27,7 @@ struct EditorView: View {
     @State private var refreshTrigger: Bool = false
     @ObservedObject private var keyboard = KeyboardResponder()
     @State private var isPres:Bool  = false
+    @State private var showBackgroundGallery: Bool = false
     
     private let fixedSize: CGFloat = 365
     
@@ -78,8 +78,11 @@ struct EditorView: View {
                 }
                 .frame(height: 365)
                 controlBar().padding(.top)
-                if(!isEditing && !isFocused){
+                if showBackgroundGallery {
                     createBackgroundPhotoGallery()
+                }
+                
+                if(!isEditing && !isFocused){
                     generateButton()
                 }
                 
@@ -101,6 +104,11 @@ struct EditorView: View {
                 _, new in
                 print("FGColor", new)
                 editSTL.tColor = new
+            }
+            .onChange(of: bgColor2) {
+                _, new in
+                print("BGColor 2", new)
+                editSTL.bColor = new
             }
             .onChange(of: editSTL.id) {
                 print("STYLO EDIT", Int(Date().timeIntervalSince1970))
@@ -227,7 +235,7 @@ struct EditorView: View {
     
     @State private var offsetX: CGFloat = 0.0
     @State private var offsetY: CGFloat = 0.0
-    @State private var containerSpacing: CGFloat = 0.0
+    @State private var containerSpacing: CGFloat = 17.0
     @State private var show: Bool = true
     @State private var showingConfirmation:Bool = false
     
@@ -236,7 +244,15 @@ struct EditorView: View {
         
         GlassEffectContainer(spacing: containerSpacing) {
             
-            HStack {
+            HStack( spacing: 0 ){
+                
+                ColorPicker("Background", selection: $fgColor, supportsOpacity: false)
+                    .labelsHidden()
+                    .frame(width: 50.0, height: 50.0)
+                    .font(.system(size: 36))
+                    .glassEffect()
+                    .offset(x: offsetX, y: -15)
+                
                 Menu {
                     Picker(selection: $selectedAlignment, label: EmptyView()) {
                         Label("left", systemImage: "text.alignleft").tag(0)
@@ -254,6 +270,9 @@ struct EditorView: View {
                     .frame(width: 40, height: 40)
                 }.buttonStyle(.glass)
                 
+               
+                
+                
                 Button {
                     if isFocused {
                         isFocused = false
@@ -267,22 +286,32 @@ struct EditorView: View {
                         Text(isFocused ? "Done" : "Edit Text")
                     }
                     .frame(width: 80, height: 40 )
-                }.buttonStyle(.glass)
+                }.buttonStyle(.glass).padding(.horizontal)
                 
-              //  VStack {
-//                    ColorPicker("Text", selection: $bgColor2, supportsOpacity: false)
-//                        .labelsHidden()
-//                        .frame(width: 50.0, height: 50.0)
-//                        .font(.system(size: 36))
-//                        .glassEffect()
-                       // .offset(x: offsetX, y: offsetY)
-                    
-                    ColorPicker("Background", selection: $fgColor, supportsOpacity: false)
-                        .labelsHidden()
-                        .frame(width: 50.0, height: 50.0)
-                        .font(.system(size: 36))
-                        .glassEffect()
-                      //   .offset(x: offsetX, y: offsetY)
+                Button {
+                    showBackgroundGallery.toggle()
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(editSTL.bColor)
+                            .frame(width: 40, height: 40)
+                        
+                        if !editSTL.bkImage.isEmpty {
+                            Image(editSTL.bkImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        }
+                    }
+                }.buttonStyle(.glass)
+                  
+                ColorPicker("Text", selection: $bgColor2, supportsOpacity: false)
+                    .labelsHidden()
+                    .frame(width: 50.0, height: 50.0)
+                    .font(.system(size: 36))
+                    .glassEffect()
+                    .offset(x: offsetX, y: -15)
               //  }
             }
         }
@@ -481,6 +510,7 @@ struct EditorView: View {
         editSTL.marginV = photoID.verticalPadding
         editSTL.marginH = photoID.horizontalPadding
         editSTL.bkImage = photoID.imageName
+        showBackgroundGallery = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             sequences = [Helper.letters[0]]}
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
