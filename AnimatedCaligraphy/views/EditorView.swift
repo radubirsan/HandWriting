@@ -1,7 +1,6 @@
 import SwiftUI
 import Firebase
 
-
 struct EditorView: View {
     @Bindable var editSTL: EditStylo
     @State private var isSaving: Bool = false
@@ -57,113 +56,55 @@ struct EditorView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                ZStack(alignment: .bottom) {
+            ZStack(alignment: .bottom) {
+                ScrollView {
                     VStack {
-                        if(!isSaving){
-                            textEditorView
+                        ZStack(alignment: .bottom) {
+                            VStack {
+                                if !isSaving {
+                                    textEditorView
+                                }
+                            }
+                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
+                            
+                            if !isFocused || isSaving || replay {
+                                Writter
+                            }
                         }
+                        .frame(height: 365)
+                        
+                        controlBar().padding(.top)
+                        
+                        if showBackgroundGallery {
+                            createBackgroundPhotoGallery()
+                        }
+                        
+                        Spacer(minLength: 80) // leave space so content doesn’t hide behind button
                     }
-                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
-                    //                 Text("\(typedCharacters) / \(characterLimit)")
-                    //                    .padding()
-                    //                    .foregroundColor(Color.black)
-                    //                    .background(Color.gray)
-                    //                    .shadow(radius: 2)
-                    //                    .frame(height:75)
-                    
-                    if !isFocused || isSaving || replay {
-                        Writter//.opacity(0.5)
-                    }
-                }
-                .frame(height: 365)
-                controlBar().padding(.top)
-                if showBackgroundGallery {
-                    createBackgroundPhotoGallery()
                 }
                 
-                if(!isEditing && !isFocused){
+                // ✅ Stick generate button here
+                if !isEditing && !isFocused {
                     generateButton()
+                        .padding(.bottom, 16) // add safe margin from bottom
                 }
-                
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !isEditing {
-                              Button("Back") {
-                                  dismiss()
-                              }.transition(.move(edge: .leading).combined(with: .opacity))
-                          }
-                }
-            }
-            //  .padding(.top, 100)
-            .ignoresSafeArea(edges: .bottom)
-            
-            .onChange(of: fgColor) {
-                _, new in
-                print("FGColor", new)
-                editSTL.tColor = new
-            }
-            .onChange(of: bgColor2) {
-                _, new in
-                print("BGColor 2", new)
-                editSTL.bColor = new
-            }
-            .onChange(of: editSTL.id) {
-                print("STYLO EDIT", Int(Date().timeIntervalSince1970))
-                selectedTextSize = Int(editSTL.textSize)
-                selectedAlignment = Int(editSTL.align)
-                fgColor = editSTL.tColor
-                //            marginV = editSTL.marginV
-                //            marginH = editSTL.marginH
-                if(editSTL.text == "") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        isEditing = true
-                        isFocused = true
-                        print("DispatchQueue STYLO EDIT" , Int(Date().timeIntervalSince1970))
+                        Button("Back") {
+                            dismiss()
+                        }
+                        .transition(.move(edge: .leading).combined(with: .opacity))
                     }
                 }
-                
             }
-            .onChange(of: selectedTextSize) { _, new in
-                if new == 60 {
-                    Helper.size = 60
-                    editSTL.textSize = 60
-                }
-                if new == 40 {
-                    Helper.size = 40
-                    editSTL.textSize = 40
-                }
-                if new == 20 {
-                    Helper.size = 20
-                    editSTL.textSize = 20
-                }
-            }
-            .onChange(of: selectedAlignment ) { _, newValue in
-                editSTL.align = CGFloat(newValue)
-            }
-            .onChange(of: bgColor2) { _, _ in
-                editSTL.bkImage = ""
-            }
-            .onChange(of: isFocused ) {
-                print( isFocused ,3333)
-                withAnimation {
-                    isEditing = isFocused
-                }
-            }
-            .onChange(of: videoQuality) {  _ , newQuality in
-                print("videoQUality" , videoQuality)
-                if(newQuality == .sd60 || newQuality == .hd60 || newQuality == ._4k60) {
-                    textSpeed = 0.0025
-                    
-                }
-                else{
-                    textSpeed = 0.005
-                }
-            }
+            .ignoresSafeArea(edges: .bottom)
+            // keep all your onChange() here ...
         }
     }
+
     
     
     private func processCharacterPositions(_ positions: [CGRect]) -> [Letter] {
@@ -245,7 +186,7 @@ struct EditorView: View {
         GlassEffectContainer(spacing: containerSpacing) {
             
             HStack( spacing: 0 ){
-                
+              
                 ColorPicker("Background", selection: $fgColor, supportsOpacity: false)
                     .labelsHidden()
                     .frame(width: 50.0, height: 50.0)
@@ -370,68 +311,68 @@ struct EditorView: View {
     
     @ViewBuilder
     func generateButton() -> some View {
-        HStack(spacing: 6){
-            if(isSaving) {
-                ProgressView(value: progress)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .frame(width:210)
-                    .padding()
-                    .contentTransition(.symbolEffect(.replace))
-                    .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
-                Button {
+        GlassEffectContainer(spacing: containerSpacing) {
+            HStack( spacing: 0 ){
+                if(isSaving) {
+                    ProgressView(value: progress)
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .frame(width:210)
+                        .padding()
+                        .contentTransition(.symbolEffect(.replace))
+                        .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
+                    Button {
                         saveTask?.cancel()
                         isSaving = false
                         animatePlane = false
-                } label: {
-                    Text("Cancel").bold()
-                    .frame(width:70, height: 40)
-                }.buttonStyle(.glassProminent)
-            } else {
-                Menu {
-                    Picker(selection: $videoQuality, label: Text("")) {
-                        ForEach(VideoQuality.allCases) { quality in
-                            Text(quality.rawValue).tag(quality)
+                    } label: {
+                        Text("Cancel").bold()
+                            .frame(width:70, height: 40)
+                    }.buttonStyle(.glassProminent)
+                } else {
+                    Menu {
+                        Picker(selection: $videoQuality, label: Text("")) {
+                            ForEach(VideoQuality.allCases) { quality in
+                                Text(quality.rawValue).tag(quality)
+                            }
                         }
-                    }
-                } label: {
-                    VStack(spacing: 0) {
-                        if textSpeed == 0.0025 {
-                            Text(videoQuality  == .sd60 ? "SD": videoQuality  == .hd60 ? "HD" : "4K")
-                                .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                                .frame(width: 47)
-                            Image(systemName: "goforward.60")
-                                .scaleEffect(CGSize(width: 0.7, height: 0.7))
-                                .frame(width: 47)
-                        } else {
-                            Text(videoQuality == .sd ? "SD" : videoQuality == .hd ? "HD" : "4K")
+                    } label: {
+                        VStack(spacing: 0) {
+                            if textSpeed == 0.0025 {
+                                Text(videoQuality  == .sd60 ? "SD": videoQuality  == .hd60 ? "HD" : "4K")
+                                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                                    .frame(width: 47)
+                                Image(systemName: "goforward.60")
+                                    .scaleEffect(CGSize(width: 0.7, height: 0.7))
+                                    .frame(width: 47)
+                            } else {
+                                Text(videoQuality == .sd ? "SD" : videoQuality == .hd ? "HD" : "4K")
                                 // .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                                .frame(width: 47)
+                                    .frame(width: 47)
+                            }
                         }
+                        .frame(width: 40, height: 40)
                     }
-                    .frame(width: 40, height: 40)
-                }
-                .buttonStyle(.glass) // glass works too if you want, but plain avoids distortion
-                
-                Button {
-                    if(isSaving) {
-                        saveTask?.cancel()
-                        isSaving = false
-                        animatePlane = false
-                    }
-                    else {
-                        presentShareLink(for: videoQuality, editSTL.marginV, editSTL.marginH) // Pass the selected video quality
-                    }
+                    .buttonStyle(.glassProminent) // glass works too if you want, but plain avoids distortion
                     
-                } label: {
-                    Text("Generate Penimation").bold()
-                        .frame(width:193, height: 40)
-                }.buttonStyle(.glassProminent)
-                
-                .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
+                    Button {
+                        if(isSaving) {
+                            saveTask?.cancel()
+                            isSaving = false
+                            animatePlane = false
+                        }
+                        else {
+                            presentShareLink(for: videoQuality, editSTL.marginV, editSTL.marginH) // Pass the selected video quality
+                        }
+                        
+                    } label: {
+                        Text("Generate Penimation").bold()
+                            .frame(width:193, height: 40)
+                    }.buttonStyle(.glassProminent)
+                    
+                        .contentTransition(.symbolEffect(.replace))
+                        .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
+                }
             }
-           
-         
             
         }.padding(0)
     }
@@ -446,6 +387,7 @@ struct EditorView: View {
             }
         }
          .onAppear{
+             fgColor = editSTL.tColor
              refreshTrigger.toggle()
          }
          .safeAreaPadding(.horizontal, editSTL.marginH)

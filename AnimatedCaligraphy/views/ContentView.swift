@@ -70,7 +70,7 @@ struct ContentView: View {
                               tabSelection: $tabSelection,
                               showAll: false, columns: 2 )
                     .tabItem {
-                        Label("Favorites", systemImage: "star")
+                        Label("Camera", systemImage: "camera")
                     }.tag(3)
                     
                     // Pass model.quotes to Favorites for Favorite quotes
@@ -78,7 +78,7 @@ struct ContentView: View {
                               tabSelection: $tabSelection,
                               showAll: false, columns: 2 )
                     .tabItem {
-                        Label("Favorites", systemImage: "star")
+                        Label("History", systemImage: "person")
                     }
                     .tag(2)
                 }
