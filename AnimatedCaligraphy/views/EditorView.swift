@@ -101,7 +101,71 @@ struct EditorView: View {
                 }
             }
             .ignoresSafeArea(edges: .bottom)
-            // keep all your onChange() here ...
+            .onChange(of: fgColor) {
+                    _, new in
+                    print("FGColor", new)
+                    editSTL.tColor = new
+                }
+            .onChange(of: bgColor2) {
+                _, new in
+                print("BGColor 2", new)
+                editSTL.bColor = new
+            }
+            .onChange(of: editSTL.id) {
+                print("STYLO EDIT", Int(Date().timeIntervalSince1970))
+                selectedTextSize = Int(editSTL.textSize)
+                selectedAlignment = Int(editSTL.align)
+                fgColor = editSTL.tColor
+                //            marginV = editSTL.marginV
+                //            marginH = editSTL.marginH
+                if(editSTL.text == "") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isEditing = true
+                        isFocused = true
+                        print("DispatchQueue STYLO EDIT" , Int(Date().timeIntervalSince1970))
+                        Button("Back") {
+                            dismiss()
+                        }
+                        .transition(.move(edge: .leading).combined(with: .opacity))
+                    }
+                }
+            }
+            .onChange(of: selectedTextSize) { _, new in
+                           if new == 60 {
+                               Helper.size = 60
+                               editSTL.textSize = 60
+                           }
+                           if new == 40 {
+                               Helper.size = 40
+                               editSTL.textSize = 40
+                           }
+                           if new == 20 {
+                               Helper.size = 20
+                               editSTL.textSize = 20
+                           }
+                       }
+                       .onChange(of: selectedAlignment ) { _, newValue in
+                           editSTL.align = CGFloat(newValue)
+                       }
+                       .onChange(of: bgColor2) { _, _ in
+                           editSTL.bkImage = ""
+                       }
+                       .onChange(of: isFocused ) {
+                           print( isFocused ,3333)
+                           withAnimation {
+                               isEditing = isFocused
+                           }
+                       }
+                       .onChange(of: videoQuality) {  _ , newQuality in
+                           print("videoQUality" , videoQuality)
+                           if(newQuality == .sd60 || newQuality == .hd60 || newQuality == ._4k60) {
+                               textSpeed = 0.0025
+                               
+                           }
+                           else{
+                               textSpeed = 0.005
+                           }
+                       }
         }
     }
 
@@ -192,7 +256,7 @@ struct EditorView: View {
                     .frame(width: 50.0, height: 50.0)
                     .font(.system(size: 36))
                     .glassEffect()
-                    .offset(x: offsetX, y: -15)
+                    .offset(x: offsetX, y: 15)
                 
                 Menu {
                     Picker(selection: $selectedAlignment, label: EmptyView()) {
@@ -264,7 +328,7 @@ struct EditorView: View {
                     .frame(width: 50.0, height: 50.0)
                     .font(.system(size: 36))
                     .glassEffect()
-                    .offset(x: offsetX, y: -15)
+                    .offset(x: offsetX, y: 15)
               //  }
             }
         }
@@ -421,6 +485,8 @@ struct EditorView: View {
          .clipped()
          .cornerRadius(19)
          .shadow(radius: 10, y: 10.0)
+         .scaleEffect(isEditing ? 1.05 : 1.0)
+         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isEditing)
         
     }
     private func iconName(for alignment: Int) -> String {
