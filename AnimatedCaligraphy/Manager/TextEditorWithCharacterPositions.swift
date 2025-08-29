@@ -17,6 +17,12 @@ struct TextEditorWithCharacterPositions: UIViewRepresentable {
         textView.font = UIFont(name: "LeckerliOne-Regular", size: textScale) // Set the custom font
         textView.delegate = context.coordinator
        
+        textView.autocorrectionType = .no
+        textView.spellCheckingType = .no
+        textView.smartQuotesType = .no
+        textView.smartDashesType = .no
+        textView.smartInsertDeleteType = .no
+        textView.autocapitalizationType = .none
         
         
         // Apply reduced line spacing

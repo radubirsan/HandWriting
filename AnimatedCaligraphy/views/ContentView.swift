@@ -30,8 +30,8 @@ import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
-import RevenueCat
-import RevenueCatUI
+// import RevenueCat
+// import RevenueCatUI
 
 import Network
 struct ContentView: View {
@@ -45,6 +45,7 @@ struct ContentView: View {
   //  @State var userM = UserViewModel()
     @State private var player2 = Player()
     var editSTL:EditStylo = EditStylo()
+    @State private var showEditorView = false
     var body: some View {
         if(networkMonitor.isConnected) {
             NavigationView {
@@ -60,11 +61,17 @@ struct ContentView: View {
                     .tag(1)
                     
                     // Editor View with videoModel
-                    EditorView(editSTL:editSTL, videoModel:videoModel)
-                        .tabItem {
-                            Label("Editor", systemImage: "square.and.pencil")
-                        }
-                        .tag(3)
+//                    EditorView(editSTL:editSTL, videoModel:videoModel)
+//                        .tabItem {
+//                            Label("Editor", systemImage: "square.and.pencil")
+//                        }
+//                        .tag(3)
+                    Favorites(selectIDX: $styloSelection,
+                              tabSelection: $tabSelection,
+                              showAll: false, columns: 2 )
+                    .tabItem {
+                        Label("Favorites", systemImage: "star")
+                    }.tag(3)
                     
                     // Pass model.quotes to Favorites for Favorite quotes
                     Favorites(selectIDX: $styloSelection,
@@ -75,6 +82,7 @@ struct ContentView: View {
                     }
                     .tag(2)
                 }
+                .tabBarMinimizeBehavior(.automatic)
                 .onChange(of: tabSelection) { _, newSelection in
                     if newSelection == 3 {  // When switching to the Editor tab
                         
@@ -105,6 +113,19 @@ struct ContentView: View {
 //                                      bkImage: "")
 //                        Helper.size = model.quotes[styloSelection].textSize
                     }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+//                        Button(action: {
+//                            showEditorView = true
+//                        }) {
+//                            Image(systemName: "plus")
+//                                .font(.title2)
+//                        }
+                    }
+                }
+                .fullScreenCover(isPresented: $showEditorView) {
+                    EditorView(editSTL: editSTL, videoModel: videoModel)
                 }
             }
         }

@@ -8,6 +8,7 @@ struct EditorView: View {
     @State private var replay: Bool = false
     @State private var isEditing: Bool = false
     @ObservedObject var videoModel: VideoModel  // <-- Change here
+    @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
     @State private var sequences: [Letter] = []
     @State private var progress: Double = 0.0
@@ -21,13 +22,15 @@ struct EditorView: View {
     @State private var animatePlane = false
     @State private var selectedTextSize: Int = 40
     @State private var selectedAlignment: Int = 1
-//    @State private var marginV: CGFloat = 90
-//    @State private var marginH: CGFloat = 90
-    @State private var textSpeed: CGFloat = 0.0025
+    //    @State private var marginV: CGFloat = 90
+    //    @State private var marginH: CGFloat = 90
+    @State private var textSpeed: CGFloat = 0.0125
     @State private var refreshTrigger: Bool = false
     @ObservedObject private var keyboard = KeyboardResponder()
+    @State private var isPres:Bool  = false
+    
     private let fixedSize: CGFloat = 365
-
+    
     var characterLimit: Int {
         if selectedTextSize == 20 {
             return 1000
@@ -37,7 +40,7 @@ struct EditorView: View {
             return 30
         }
     }
-
+    
     @State var typedCharacters: Int = 0
     @State private var videoQuality: VideoQuality = .sd60
     @State private var tappedPhotoID: String = ""
@@ -50,119 +53,126 @@ struct EditorView: View {
         case _4k60 = "4K 60-fps"
         var id: String { self.rawValue }
     }
-
+    
     
     var body: some View {
-        ScrollView {
-            ZStack(alignment: .bottom) {
-                VStack {
-                    if(!isSaving){
-                        textEditorView
+        NavigationView {
+            ScrollView {
+                ZStack(alignment: .bottom) {
+                    VStack {
+                        if(!isSaving){
+                            textEditorView
+                        }
+                    }
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
+                    //                 Text("\(typedCharacters) / \(characterLimit)")
+                    //                    .padding()
+                    //                    .foregroundColor(Color.black)
+                    //                    .background(Color.gray)
+                    //                    .shadow(radius: 2)
+                    //                    .frame(height:75)
+                    
+                    if !isFocused || isSaving || replay {
+                        Writter//.opacity(0.5)
                     }
                 }
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
-                 Text("\(typedCharacters) / \(characterLimit)")
-                    .padding()
-                    .foregroundColor(Color.black)
-                    .background(Color.gray)
-                    .shadow(radius: 2)
-                    .frame(height:75)
-               
-                if !isFocused || isSaving || replay {
-                    Writter//.opacity(0.5)
+                .frame(height: 365)
+                controlBar().padding(.top)
+                if(!isEditing && !isFocused){
+                    createBackgroundPhotoGallery()
+                    generateButton()
+                }
+                
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !isEditing {
+                              Button("Back") {
+                                  dismiss()
+                              }.transition(.move(edge: .leading).combined(with: .opacity))
+                          }
                 }
             }
-            .frame(height: 365)
-            controlBar()
-            .frame(width: UIScreen.main.bounds.width - 10, height: 86)
-            .background(.gray).cornerRadius(20)
-            .padding(.top , 20)
-            HStack(spacing:7){
-                ColorPicker("Background", selection: $bgColor2, supportsOpacity: false)
-                    //.scaleEffect(CGSize(width: 1.1, height: 1.1))
-                    .frame(maxWidth: 145)
-                    .padding()
-                ColorPicker("Text", selection: $fgColor, supportsOpacity: false)
-                    //.scaleEffect(CGSize(width: 1.1, height: 1.1))
-                    //.labelsHidden()
-                    .frame(maxWidth: 130)
-            }
-            if(!isEditing && !isFocused){
-                createPhotoGallery()
-            }
-        }
-        .padding(.top, 47)
-        .ignoresSafeArea()
-      
-        .onChange(of: fgColor) {
-            _, new in
-            print("FGColor", new)
-            editSTL.tColor = new
-        }
-        .onChange(of: editSTL.id) {
-            print("STYLO EDIT", Int(Date().timeIntervalSince1970))
-            selectedTextSize = Int(editSTL.textSize)
-            selectedAlignment = Int(editSTL.align)
-            fgColor = editSTL.tColor
-//            marginV = editSTL.marginV
-//            marginH = editSTL.marginH
-            if(editSTL.text == "") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isEditing  = true
-                    isFocused = true
-                    print("DispatchQueue STYLO EDIT" , Int(Date().timeIntervalSince1970))
-                }
-            }
+            //  .padding(.top, 100)
+            .ignoresSafeArea(edges: .bottom)
             
-        }
-        .onChange(of: selectedTextSize) { _, new in
-            if new == 60 {
-                Helper.size = 60
-                editSTL.textSize = 60
+            .onChange(of: fgColor) {
+                _, new in
+                print("FGColor", new)
+                editSTL.tColor = new
             }
-            if new == 40 {
-                Helper.size = 40
-                editSTL.textSize = 40
+            .onChange(of: editSTL.id) {
+                print("STYLO EDIT", Int(Date().timeIntervalSince1970))
+                selectedTextSize = Int(editSTL.textSize)
+                selectedAlignment = Int(editSTL.align)
+                fgColor = editSTL.tColor
+                //            marginV = editSTL.marginV
+                //            marginH = editSTL.marginH
+                if(editSTL.text == "") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isEditing = true
+                        isFocused = true
+                        print("DispatchQueue STYLO EDIT" , Int(Date().timeIntervalSince1970))
+                    }
+                }
+                
             }
-            if new == 20 {
-                Helper.size = 20
-                editSTL.textSize = 20
+            .onChange(of: selectedTextSize) { _, new in
+                if new == 60 {
+                    Helper.size = 60
+                    editSTL.textSize = 60
+                }
+                if new == 40 {
+                    Helper.size = 40
+                    editSTL.textSize = 40
+                }
+                if new == 20 {
+                    Helper.size = 20
+                    editSTL.textSize = 20
+                }
             }
-        }
-        .onChange(of: selectedAlignment ) { _, newValue in
-            editSTL.align = CGFloat(newValue)
-        }
-        .onChange(of: bgColor2) { _, _ in
-            editSTL.bkImage = ""
-        }
-        .onChange(of: videoQuality) {  _ , newQuality in
+            .onChange(of: selectedAlignment ) { _, newValue in
+                editSTL.align = CGFloat(newValue)
+            }
+            .onChange(of: bgColor2) { _, _ in
+                editSTL.bkImage = ""
+            }
+            .onChange(of: isFocused ) {
+                print( isFocused ,3333)
+                withAnimation {
+                    isEditing = isFocused
+                }
+            }
+            .onChange(of: videoQuality) {  _ , newQuality in
                 print("videoQUality" , videoQuality)
-                        if(newQuality == .sd60 || newQuality == .hd60 || newQuality == ._4k60) {
-                            textSpeed = 0.0025
-                            
-                        }
-                        else{
-                            textSpeed = 0.005
-                        }
+                if(newQuality == .sd60 || newQuality == .hd60 || newQuality == ._4k60) {
+                    textSpeed = 0.0025
+                    
+                }
+                else{
+                    textSpeed = 0.005
+                }
             }
+        }
     }
     
     
     private func processCharacterPositions(_ positions: [CGRect]) -> [Letter] {
         var letters: [Letter] = []
-       
+        
         for i in 0..<positions.count {
             guard i < editSTL.text.count else { continue }
             
             let stringIndex = editSTL.text.index(editSTL.text.startIndex, offsetBy: i)
             guard stringIndex < editSTL.text.endIndex else { continue }
-
+            
             let character = String(editSTL.text[stringIndex])
             
             if positions[i].origin.y + positions[i].size.height >= fixedSize {
                 break
             }
-
+            
             
             let namePrefix = character
                 .replacingOccurrences(of: " ", with: "_")
@@ -174,10 +184,10 @@ struct EditorView: View {
                 .replacingOccurrences(of: "@", with: "at")
                 .replacingOccurrences(of: ":", with: "doubledot")
                 .replacingOccurrences(of: "-", with: "line")
-
+            
             let count = namePrefix == namePrefix.lowercased() ? 3 : 2
             let expandedPrefix = String(repeating: namePrefix, count: count)
-
+            
             if var matchingLetter = Helper.letters.first(where: { $0.namePrefix == expandedPrefix }) {
                 matchingLetter.x = positions[i].origin.x
                 matchingLetter.y = positions[i].origin.y
@@ -189,14 +199,14 @@ struct EditorView: View {
                 letters.append(defaultLetter)
                 print("No Match Found For: \(namePrefix):" + expandedPrefix)
             }
-
+            
         }
-
+        
         return letters
     }
     
     @ViewBuilder
-    func createPhotoGallery() -> some View {
+    func createBackgroundPhotoGallery() -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(Helper.BKimages, id: \.self) { imageName in
@@ -206,7 +216,7 @@ struct EditorView: View {
                         .cornerRadius(10)
                         .padding(.horizontal, 5)
                         .onTapGesture {
-                             handlePhotoTap(photoID: imageName)
+                            handlePhotoTap(photoID: imageName)
                         }
                 }
             }
@@ -214,112 +224,153 @@ struct EditorView: View {
         //.background(Color.black.opacity(0.2))
     }
     
+    
+    @State private var offsetX: CGFloat = 0.0
+    @State private var offsetY: CGFloat = 0.0
+    @State private var containerSpacing: CGFloat = 0.0
+    @State private var show: Bool = true
+    @State private var showingConfirmation:Bool = false
+    
     @ViewBuilder
     func controlBar() -> some View {
         
+        GlassEffectContainer(spacing: containerSpacing) {
+            
+            HStack {
+                Menu {
+                    Picker(selection: $selectedAlignment, label: EmptyView()) {
+                        Label("left", systemImage: "text.alignleft").tag(0)
+                        Label("center", systemImage: "text.aligncenter").tag(1)
+                        Label("right", systemImage: "text.alignright").tag(2)
+                    }
+                    Picker(selection: $selectedTextSize, label: Text("")) {
+                        
+                        Text("Large").tag(60)
+                        Text("Medium").tag(40)
+                        Text("Small").tag(20)
+                    }
+                } label: {
+                    Image(systemName:  "textformat.size")
+                    .frame(width: 40, height: 40)
+                }.buttonStyle(.glass)
+                
+                Button {
+                    if isFocused {
+                        isFocused = false
+                      
+                    } else {
+                        isFocused = true
+                    }
+                } label: {
+                    
+                    HStack {
+                        Text(isFocused ? "Done" : "Edit Text")
+                    }
+                    .frame(width: 80, height: 40 )
+                }.buttonStyle(.glass)
+                
+              //  VStack {
+//                    ColorPicker("Text", selection: $bgColor2, supportsOpacity: false)
+//                        .labelsHidden()
+//                        .frame(width: 50.0, height: 50.0)
+//                        .font(.system(size: 36))
+//                        .glassEffect()
+                       // .offset(x: offsetX, y: offsetY)
+                    
+                    ColorPicker("Background", selection: $fgColor, supportsOpacity: false)
+                        .labelsHidden()
+                        .frame(width: 50.0, height: 50.0)
+                        .font(.system(size: 36))
+                        .glassEffect()
+                      //   .offset(x: offsetX, y: offsetY)
+              //  }
+            }
+        }
+//        HStack {
+//            Text("**Offset X**")
+//            Slider(value: $offsetX, in: -60.0 ... 0.0, step: 10.0, label: {}, minimumValueLabel: {
+//                Text("-60.0")
+//            }, maximumValueLabel: {
+//                Text("0.0")
+//            })
+//        }
+//        
+//        HStack {
+//            Text("**Offset Y**")
+//            Slider(value: $offsetY, in: -20.0 ... 20.0, step: 10.0, label: {}, minimumValueLabel: {
+//                Text("-20.0")
+//            }, maximumValueLabel: {
+//                Text("20.0")
+//            })
+//        }
+//        
+//        HStack {
+//            Text("**Glass Container \nSpacing**")
+//            Slider(value: $containerSpacing, in: 0.0 ... 60.0, step: 10.0, label: {}, minimumValueLabel: {
+//                Text("0.0")
+//            }, maximumValueLabel: {
+//                Text("60.0")
+//            })
+//        }
+//        
+//        HStack(spacing: 24){
+//            Button(action: {
+//                withAnimation(.linear(duration: 1), {
+//                    show.toggle()
+//                })
+//            }, label: {
+//                Text("Show/Hide")
+//            })
+//            .buttonStyle(.borderedProminent)
+//            
+//            
+//        }
+    }
+    
+    @ViewBuilder
+    func generateButton() -> some View {
         HStack(spacing: 6){
             if(isSaving) {
                 ProgressView(value: progress)
                     .progressViewStyle(LinearProgressViewStyle())
                     .frame(width:210)
                     .padding()
-            }
-            else{
-            Button {
-                if isFocused {
-                    isFocused = false
-                    isEditing = false
-                } else {
-                    isFocused = true
-                    isEditing = true
-                }
-            } label: {
-                
-                HStack {
-                    Text(isFocused ? "Done" : "Edit")
-                    //Image(systemName: isFocused ? "" : "pencil")
-                }
-                .frame(width:60, height: 40 )
-                .padding(7)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            
-            ZStack {
-                Image(systemName: selectedAlignment == 0 ? "text.alignleft" : selectedAlignment == 1 ? "text.aligncenter" : "text.alignright")
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                Picker(selection: $selectedAlignment, label: Text("")) {
-                    Label("left", systemImage: "text.alignleft").tag(0)
-                    Label("center", systemImage: "text.aligncenter").tag(1)
-                    Label("right", systemImage: "text.alignright").tag(2)
-                }
-                .opacity(0.011)
-                .scaleEffect(CGSize(width: 2.3, height: 2.3))
-                .frame(width: 30)
-            }
-            .frame(height: 40)
-            .padding(7)
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            
-           
-            
-            ZStack {
-                Image(systemName:  "textformat.size")
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                Picker(selection: $selectedTextSize, label: Text("")) {
-                    
-                    Text("Large").tag(60)
-                    Text("Medium").tag(40)
-                    Text("Small").tag(20)
-                }
-                .opacity(0.011)
-                .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                .frame(width: 30)
-               
-            }
-            .frame(height: 40)
-            .padding(7)
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-    
-            
-            ZStack {
-                VStack(spacing:0) {
-                    if(textSpeed == 0.0025) {
-                        Text(videoQuality  == .sd60 ? "SD": videoQuality  == .hd60 ? "HD" : "4K")
-                            .scaleEffect(CGSize(width: 1.3, height: 1.3)).frame(width:47)
-                        Image(systemName: "goforward.60")
-                            .scaleEffect(CGSize(width: 0.7, height: 0.7)).frame(width:47)
-                    }
-                    else{
-                        Text(videoQuality == .sd ? "SD" : videoQuality == .hd ? "HD" : "4K")
-                            .scaleEffect(CGSize(width: 1.3, height: 1.3)).frame(width:47)
-                    }
-                }
-                        Picker(selection: $videoQuality, label: Text("")) {
-                            ForEach(VideoQuality.allCases) { quality in
-                                Text(quality.rawValue).tag(quality)
-                            }
+                    .contentTransition(.symbolEffect(.replace))
+                    .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
+                Button {
+                        saveTask?.cancel()
+                        isSaving = false
+                        animatePlane = false
+                } label: {
+                    Text("Cancel").bold()
+                    .frame(width:70, height: 40)
+                }.buttonStyle(.glassProminent)
+            } else {
+                Menu {
+                    Picker(selection: $videoQuality, label: Text("")) {
+                        ForEach(VideoQuality.allCases) { quality in
+                            Text(quality.rawValue).tag(quality)
                         }
-                    .opacity(0.011)
-                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                    .frame(width: 30)
-                    
+                    }
+                } label: {
+                    VStack(spacing: 0) {
+                        if textSpeed == 0.0025 {
+                            Text(videoQuality  == .sd60 ? "SD": videoQuality  == .hd60 ? "HD" : "4K")
+                                .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                                .frame(width: 47)
+                            Image(systemName: "goforward.60")
+                                .scaleEffect(CGSize(width: 0.7, height: 0.7))
+                                .frame(width: 47)
+                        } else {
+                            Text(videoQuality == .sd ? "SD" : videoQuality == .hd ? "HD" : "4K")
+                                // .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                                .frame(width: 47)
+                        }
+                    }
+                    .frame(width: 40, height: 40)
                 }
-               
-                .frame(height: 40)
-                .padding(7)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-        }
-            Spacer().frame(width:3)
-            Divider()
-            Spacer().frame(width:3)
+                .buttonStyle(.glass) // glass works too if you want, but plain avoids distortion
+                
                 Button {
                     if(isSaving) {
                         saveTask?.cancel()
@@ -331,27 +382,21 @@ struct EditorView: View {
                     }
                     
                 } label: {
-                  //  HStack {
-                        Text(isSaving ? "Cancel" : "Send").bold()
-                       // Image(systemName: isSaving ? "timelapse" : "paperplane")
-                  //  }
-                    .frame(width:63, height: 40)
-                    .padding(7)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
+                    Text("Generate Penimation").bold()
+                        .frame(width:193, height: 40)
+                }.buttonStyle(.glassProminent)
                 
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, options: animatePlane ? .repeating : .nonRepeating , value: animatePlane)
-   
-            }.padding(0)
+            }
+           
+         
             
-       
+        }.padding(0)
     }
     
     private var textEditorView: some View {
-           TextEditorWithCharacterPositions(text: $editSTL.text, textScale: editSTL.textSize,
+        TextEditorWithCharacterPositions(text: $editSTL.text, textScale: editSTL.textSize,
                                          align: editSTL.align, color: editSTL.tColor, refreshTrigger: refreshTrigger) { positions in
             DispatchQueue.main.async {
                 typedCharacters = editSTL.text.count
@@ -359,39 +404,49 @@ struct EditorView: View {
                 print("PPPosition recalculateding")
             }
         }
-                                         .border(.blue)
-                                         .safeAreaPadding(.horizontal, editSTL.marginH)
-                                         .safeAreaPadding(.vertical, editSTL.marginV)
-                                         .foregroundColor(editSTL.tColor)
-                                         .focused($isFocused)
-                                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                                         .frame(width: fixedSize, height: fixedSize)
-                                         .scrollContentBackground(.hidden)
-                                         .background(
-                                                        Group {
-                                                            if !editSTL.bkImage.isEmpty {
-                                                                Image(editSTL.bkImage)
-                                                                    .resizable()
-                                                                    .scaledToFill()
-                                                                    .clipped()
-                                                            } else {
-                                                                editSTL.bColor
-                                                            }
-                                                        }.shadow(radius: 10, y: 10.0)
-                                                    )
-                                         .multilineTextAlignment(returnAlign(selectedAlignment))
-                                         .environment(\._lineHeightMultiple, 0.8)
-                                         .environment(\.sizeCategory, .medium)
-                                         .autocapitalization(.none)
-                                         .textInputAutocapitalization(.never)
-                                         .keyboardType(.asciiCapable)
-                                         .textContentType(.init(rawValue: ""))
-                                         .autocorrectionDisabled(true)
-                                        // .limitText(editSTL.text, to: characterLimit)
-                                         .clipped()
-                                         .cornerRadius(19)
-                                         .shadow(radius: 10, y: 10.0)
-                                      
+         .onAppear{
+             refreshTrigger.toggle()
+         }
+         .safeAreaPadding(.horizontal, editSTL.marginH)
+         .safeAreaPadding(.vertical, editSTL.marginV)
+         .foregroundColor(editSTL.tColor)
+         .focused($isFocused)
+         .textFieldStyle(RoundedBorderTextFieldStyle())
+         .frame(width: fixedSize, height: fixedSize)
+         .scrollContentBackground(.hidden)
+         .background(
+            Group {
+                if !editSTL.bkImage.isEmpty {
+                    Image(editSTL.bkImage)
+                        .resizable()
+                        .scaledToFill()
+                        .clipped()
+                } else {
+                    editSTL.bColor
+                }
+            }.shadow(radius: 10, y: 10.0)
+         )
+         .multilineTextAlignment(returnAlign(selectedAlignment))
+         .environment(\._lineHeightMultiple, 0.8)
+         .environment(\.sizeCategory, .medium)
+         .autocapitalization(.none)
+         .textInputAutocapitalization(.never)
+         .keyboardType(.asciiCapable)
+         .textContentType(.init(rawValue: ""))
+         .autocorrectionDisabled(true)
+        // .limitText(editSTL.text, to: characterLimit)
+         .clipped()
+         .cornerRadius(19)
+         .shadow(radius: 10, y: 10.0)
+        
+    }
+    private func iconName(for alignment: Int) -> String {
+        switch alignment {
+        case 0: return "text.alignleft"
+        case 1: return "text.aligncenter"
+        case 2: return "text.alignright"
+        default: return "text.alignleft"
+        }
     }
     
     private var Writter: some View {
@@ -399,44 +454,44 @@ struct EditorView: View {
             TextWriter( letters: $sequences, textSize: $editSTL.textSize,
                         align: editSTL.align, marginV:editSTL.marginV, marginH:editSTL.marginH,
                         textSpeed:$textSpeed)
-                .frame(width: fixedSize , height: fixedSize )
-                .foregroundColor(editSTL.tColor)
-                .background(
-                       Group {
-                           if  !editSTL.bkImage.isEmpty {
-                               Image(editSTL.bkImage)
-                                   .resizable()
-                                   .scaledToFill()
-                                   .clipped()
-                                   .cornerRadius(19)
-                                   
-                           } else {
-                               editSTL.bColor.cornerRadius(19)
-                           }
-                               
-                       }.shadow(radius: 10, y: 10.0)
-                                       )
-                .allowsHitTesting(false)
+            .frame(width: fixedSize , height: fixedSize )
+            .foregroundColor(editSTL.tColor)
+            .background(
+                Group {
+                    if  !editSTL.bkImage.isEmpty {
+                        Image(editSTL.bkImage)
+                            .resizable()
+                            .scaledToFill()
+                            .clipped()
+                            .cornerRadius(19)
+                        
+                    } else {
+                        editSTL.bColor.cornerRadius(19)
+                    }
+                    
+                }.shadow(radius: 10, y: 10.0)
+            )
+            .allowsHitTesting(false)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     // Function to handle the photo tap and return the ID
-     func handlePhotoTap(photoID: LetterImage) {
-         editSTL.marginV = photoID.verticalPadding
-         editSTL.marginH = photoID.horizontalPadding
-         editSTL.bkImage = photoID.imageName
-         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-             sequences = [Helper.letters[0]]}
-         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-             refreshTrigger.toggle() }
-       
+    func handlePhotoTap(photoID: LetterImage) {
+        editSTL.marginV = photoID.verticalPadding
+        editSTL.marginH = photoID.horizontalPadding
+        editSTL.bkImage = photoID.imageName
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            sequences = [Helper.letters[0]]}
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            refreshTrigger.toggle() }
+        
         
         // isFocused = true
         // isEditing = true
-         print("Tapped photo ID: \(photoID)")
-     }
-       
+        print("Tapped photo ID: \(photoID)")
+    }
+    
     func returnAlign(_ i:Int ) -> TextAlignment {
         if(i == 1) {
             return  .center
@@ -486,10 +541,10 @@ struct EditorView: View {
                                                                marginV:marginV,
                                                                marginH:editSTL.marginH,
                                                                progressHandler: { value in
-                                                                                      DispatchQueue.main.async {
-                                                                                          progress = value
-                                                                                      }
-                                                                                  }) // Pass quality here
+                DispatchQueue.main.async {
+                    progress = value
+                }
+            }) // Pass quality here
             print("saveModifiedVideo", savedVideoURL ?? "no file")
             DispatchQueue.main.async {
                 isSaving = false
@@ -503,7 +558,7 @@ struct EditorView: View {
             }
         }
     }
-
     
-    }
+    
+}
 

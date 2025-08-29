@@ -175,6 +175,8 @@
 				1764FBF82C89D1B900211370 /* Stylo.swift */,
 				1711FBBA2C81DF690047898A /* KeyboardResponder.swift */,
 				17B6BB682C805E24000E6EC5 /* Favorites.swift */,
+				17D080312C75FD0B00571F8B /* TextWriter.swift */,
+				17D7D9B22C6A153400657426 /* ContentView.swift */,
 			);
 			path = views;
 			sourceTree = "<group>";
@@ -223,10 +225,8 @@
 				171C67552C8EB78E007BCE0F /* QuotesService.swift */,
 				17CDA5222C80915C004F9FD0 /* Helper.swift */,
 				17D7D9E62C6A179B00657426 /* MultiImageSequence.swift */,
-				17D7D9B22C6A153400657426 /* ContentView.swift */,
 				17D7D9B42C6A153600657426 /* Assets.xcassets */,
 				17D7D9B62C6A153600657426 /* Preview Content */,
-				17D080312C75FD0B00571F8B /* TextWriter.swift */,
 			);
 			path = AnimatedCaligraphy;
 			sourceTree = "<group>";

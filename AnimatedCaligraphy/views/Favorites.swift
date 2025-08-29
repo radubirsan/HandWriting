@@ -22,6 +22,8 @@ struct Favorites: View {
     var columns: Int // New property to determine the number of columns
     @State private var selectedFilter: FilterOption = .all
     @State private var searchText: String = "" // New state for search query
+    @State private var showEditorView = false
+    @StateObject private var videoModel = VideoModel()
     enum FilterOption: String, CaseIterable {
            case all = "All"
            case funny = "Funny"
@@ -79,20 +81,21 @@ struct Favorites: View {
         }
         .safeAreaInset(edge: .bottom, alignment: .trailing) {
             Button(action: {
-                // Navigate to the edit view when tapped
+                // Present EditorView as fullscreen modal
                 selectIDX = 999
-                tabSelection = 3 // Assuming tabSelection = 3 is the Edit view
+                loadSelectedStylo()
+                showEditorView = true
             }) {
                 Image(systemName: "plus")
-                    .resizable()
-                    .frame(width: 26, height: 26) // 50x50 is half of 100x100 (original size)
-                    .foregroundColor(.white)
-                    .padding(14)
-                    .background(Color.blue)
-                    .cornerRadius(21) // Rounded corners (half of width/height for a circle)
-                    .shadow(radius: 5)
+                    .frame(width: 40.0, height: 40.0)
+                    .font(.system(size: 26)).bold()
             }
+            .buttonStyle(.glassProminent)
+          //  .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
             .padding([.bottom, .trailing], 20) // Adjust the padding to move it to bottom-right
+        }
+        .fullScreenCover(isPresented: $showEditorView) {
+            EditorView(editSTL: editSTL, videoModel: videoModel)
         }
         .onTapGesture {
             hideKeyboard()
@@ -183,7 +186,8 @@ struct Favorites: View {
                             .cornerRadius(19)
                             .onTapGesture {
                                 selectIDX = index
-                                tabSelection = 3
+                                loadSelectedStylo()
+                                showEditorView = true
                             }
                             .shadow(radius: 10, y: 10.0)
                     
@@ -192,7 +196,8 @@ struct Favorites: View {
                         HStack(spacing: 25) {
                             Button {
                                 selectIDX = index
-                                tabSelection = 3
+                                loadSelectedStylo()
+                                showEditorView = true
                                 
                             } label: {
                                 
@@ -239,6 +244,23 @@ struct Favorites: View {
                 }
             }
         }
+    }
+    
+    // Function to load selected stylo into editSTL
+    func loadSelectedStylo() {
+        var selectedStylo: Stylo = Stylo(text: "",
+                                       textSize: 40,
+                                       bColor: .red,
+                                       tColor: Color(hex: "#ff00ff"),
+                                       align: 0,
+                                       bkImage: "letter_1")
+        
+        if selectIDX != 999 && selectIDX < model.quotes.count {
+            selectedStylo = model.quotes[selectIDX]
+        }
+        
+        Helper.size = selectedStylo.textSize
+        Helper.mapStyloToEditSTL(selectedStylo, editSTL)
     }
 
     // Function to save or remove Stylo from UserDefaults as a favorite
