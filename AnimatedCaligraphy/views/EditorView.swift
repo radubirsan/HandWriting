@@ -289,7 +289,9 @@ struct EditorView: View {
                 }.buttonStyle(.glass).padding(.horizontal)
                 
                 Button {
-                    showBackgroundGallery.toggle()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showBackgroundGallery.toggle()
+                    }
                 } label: {
                     ZStack {
                         Circle()
@@ -303,6 +305,16 @@ struct EditorView: View {
                                 .frame(width: 40, height: 40)
                                 .clipShape(Circle())
                         }
+                        
+                      
+                              
+                                Image(systemName: showBackgroundGallery ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .shadow(color: .black.opacity(0.5), radius: 1)
+                                  //  .rotationEffect(.degrees(showBackgroundGallery ? 180 : 0))
+                                    .animation(.easeInOut(duration: 0.3), value: showBackgroundGallery)
+                       
                     }
                 }.buttonStyle(.glass)
                   
