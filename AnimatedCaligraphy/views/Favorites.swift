@@ -12,164 +12,152 @@ struct Favorites: View {
     @State private var refreshTrigger: Bool = false
     @Binding var selectIDX: Int
     @Binding var tabSelection: Int
-    //@Binding var model.quotes: [Stylo]
     @Environment(Model.self) var model
     @State private var progress: Double = 0
     @State private var favorites: [Stylo] = []
     @State var showAll: Bool = true
     @State private var isSaving: Bool = false
     @State private var saveTask: Task<Void, Never>? = nil
-    var columns: Int // New property to determine the number of columns
+    var columns: Int
     @State private var selectedFilter: FilterOption = .all
-    @State private var searchText: String = "" // New state for search query
+    @State private var searchText: String = ""
     @State private var showEditorView = false
     @StateObject private var videoModel = VideoModel()
+    
     enum FilterOption: String, CaseIterable {
-           case all = "All"
-           case funny = "Funny"
-           case love = "Love"
-           case money = "Money"
-           case invite = "Invite"
-
-       }
+        case all = "All"
+        case funny = "Funny"
+        case love = "Love"
+        case money = "Money"
+        case invite = "Invite"
+    }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            // Search Bar
-            HStack {
+        NavigationView {
+            ScrollView(showsIndicators: false) {
+                // Just the filter picker - no more custom search field
+                HStack {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(FilterOption.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding()
                 
-                TextField("Search...", text: $searchText)
-                                .focused($isSearchFieldFocused)
-                                .toolbar {
-                                    if isSearchFieldFocused {
-                                        ToolbarItemGroup(placement: .keyboard) {
-                                            Spacer()
-                                            Button("Done") {
-                                                isSearchFieldFocused = false // Dismiss keyboard
-                                            }
-                                        }
-                                    }
-                                }
-                               
-                                   .padding(10)
-                                   .background(Color(.systemGray6))
-                                   .cornerRadius(10)
-                                   .padding()
-                                   // Attach the focus state
-                                   
-                
-                Picker("Filter", selection: $selectedFilter) {
-                    ForEach(FilterOption.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
+                if columns == 2 {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        contentView.scaleEffect(CGSize(width: 0.5, height: 0.5)).frame(height: 230)
+                    }
+                } else {
+                    VStack {
+                        contentView
+                    }
+                    .padding()
+                }
+            }
+          //  .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(columns == 1 ? "Explore" : "Favorites") // Required for .searchable
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Search quotes..."
+            ) {
+                // Optional: Add search suggestions based on categories
+                if !searchText.isEmpty {
+                    ForEach(FilterOption.allCases.filter { $0 != .all }, id: \.self) { filter in
+                        Text(filter.rawValue)
+                            .searchCompletion(filter.rawValue.lowercased())
                     }
                 }
             }
-            //.pickerStyle(.segmented)
-            .padding()
-       // List{
-            
-            if columns == 2 {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                    contentView.scaleEffect(CGSize(width: 0.5, height: 0.5)).frame(height: 230)
+//            .toolbar {
+//                //      DefaultToolbarItem(kind: .search, placement: .bottomBar)
+//
+//                      ToolbarSpacer(placement: .bottomBar)
+//
+//                      ToolbarItem(placement: .bottomBar) {
+//                          Button {} label: { Label("New", systemImage: "square.and.pencil") }
+//                      }
+//                  }
+            .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                Button(action: {
+                    selectIDX = 999
+                    loadSelectedStylo()
+                    showEditorView = true
+                }) {
+                    Image(systemName: "plus")
+                        .frame(width: 40.0, height: 40.0)
+                        .font(.system(size: 26)).bold()
                 }
-            } else {
-                VStack {
-                    contentView
-                }
-                .padding()
+                .buttonStyle(.glass)
+                .padding([.bottom, .trailing], 20)
             }
-        }
-        .safeAreaInset(edge: .bottom, alignment: .trailing) {
-            Button(action: {
-                // Present EditorView as fullscreen modal
-                selectIDX = 999
-                loadSelectedStylo()
-                showEditorView = true
-            }) {
-                Image(systemName: "plus")
-                    .frame(width: 40.0, height: 40.0)
-                    .font(.system(size: 26)).bold()
+            .fullScreenCover(isPresented: $showEditorView) {
+                EditorView(editSTL: editSTL, videoModel: videoModel)
             }
-            .buttonStyle(.glassProminent)
-          //  .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
-            .padding([.bottom, .trailing], 20) // Adjust the padding to move it to bottom-right
-        }
-        .fullScreenCover(isPresented: $showEditorView) {
-            EditorView(editSTL: editSTL, videoModel: videoModel)
-        }
-        .onTapGesture {
-            hideKeyboard()
-        }
-        .safeAreaInset(edge: .bottom, alignment: isSaving ? .center : .trailing){
-            if(isSaving) {
-                ZStack  {
-                    RoundedRectangle(cornerRadius: 12)
-                    // .foregroundStyle(.gray.gradient.opacity(0.8))
-                        .background(
-                            .ultraThickMaterial,
-                            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        )
-                        .frame(width: isSaving ? UIScreen.main.bounds.width - 20 : 74 , height:74)
-                        .padding()
-                    HStack {
-                        ProgressView(value: progress)
-                            .progressViewStyle(LinearProgressViewStyle())
-                            .frame(width:210)
+            .safeAreaInset(edge: .bottom, alignment: isSaving ? .center : .trailing) {
+                if(isSaving) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .background(
+                                .ultraThickMaterial,
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            )
+                            .frame(width: isSaving ? UIScreen.main.bounds.width - 20 : 74 , height:74)
                             .padding()
-                        Button {
-                            print("Cancel", saveTask ?? "no saved task")
-                            saveTask?.cancel()
-                            progress = 0
-                            isSaving = false
-                        } label: {
-                            Text("Cancel").bold()
-                                .frame(width:73, height: 40)
-                                .padding(7)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
+                        HStack {
+                            ProgressView(value: progress)
+                                .progressViewStyle(LinearProgressViewStyle())
+                                .frame(width:210)
+                                .padding()
+                            Button {
+                                print("Cancel", saveTask ?? "no saved task")
+                                saveTask?.cancel()
+                                progress = 0
+                                isSaving = false
+                            } label: {
+                                Text("Cancel").bold()
+                                    .frame(width:73, height: 40)
+                                    .padding(7)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
                         }
                     }
                 }
-           // }
             }
-        }
-        .onAppear {
-            loadFavorites()
-        }
-        .onChange(of: progress) { _, newValue in
-           
-            if( newValue > 0.9) {
-                isSaving = false
+            .onAppear {
+                loadFavorites()
             }
-            
-        }
-        .onAppear() {
+            .onChange(of: progress) { _, newValue in
+                if( newValue > 0.9) {
+                    isSaving = false
+                }
+            }
+            .onAppear() {
                 Analytics.logEvent(AnalyticsEventScreenView,
                                    parameters: [AnalyticsParameterScreenName: "\(columns == 1 ? "ExploreView" : "Favorites")",
                                                 AnalyticsParameterScreenClass: "\(Favorites.self)"])
-              }
+            }
+        }
     }
-    // Extracted the main content into a computed property
+    
+    // Rest of your methods remain the same...
     var contentView: some View {
-        
-        
         ForEach(filteredStylos, id: \.self) { index in
-        //ForEach(0..<model.quotes.count, id: \.self) { index in
             if showAll || isFavorite(stylo: model.quotes[index]) {
                 VStack {
-                   
                     if let hh = Helper.BKimages.first ( where: { $0.imageName == model.quotes[index].bkImage} ) {
-                        //Text("hh\(hh.horizontalPadding) align: \(model.quotes[index].align)")
                         Text(model.quotes[index].text)
-                        // .safeAreaPadding(.horizontal, Helper.getLetterHMargins(model.quotes[index].bkImage))
-                        // .safeAreaPadding(.vertical, Helper.getLetterVMargins(model.quotes[index].bkImage))
                             .font(.custom("LeckerliOne-Regular", size: model.quotes[index].textSize))
                             .padding(EdgeInsets(top: hh.verticalPadding, leading:  hh.horizontalPadding, bottom: hh.verticalPadding, trailing: hh.horizontalPadding))
                             .fixedSize(horizontal: false, vertical: false)
                             .frame(width: 365, height: 365, alignment: .top)
                             .multilineTextAlignment(model.quotes[index].align == 0 ? .leading : model.quotes[index].align == 1 ? .center : .trailing)
-                            
                             .background(
                                 Group {
                                     if (model.quotes[index].bkImage.count > 4) {
@@ -190,63 +178,55 @@ struct Favorites: View {
                                 showEditorView = true
                             }
                             .shadow(radius: 10, y: 10.0)
-                    
                     }
                     
-                        HStack(spacing: 25) {
-                            Button {
-                                selectIDX = index
-                                loadSelectedStylo()
-                                showEditorView = true
-                                
-                            } label: {
-                                
-                                Image(systemName: "square.and.pencil")
-                                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                            }
-                            .contentTransition(.symbolEffect(.replace))
-                            
-                            .labelsHidden()
-                            
-                             if(false && columns == 1 ) {
-                                Button(action: {
-                                    isSaving = true
-                                    saveTask = shareStylo(model.quotes[index])
-                                }) {
-                                    HStack {
-                                        Text("Send")
-                                        Image(systemName:  "paperplane")
-                                    }
-                                    .frame(width: 95, height: 24) // Fixed size for the "Go to Editor" button
-                                    .font(.headline)
-                                    .padding()
-                                    .background(isSaving ? Color.gray : Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
+                    HStack(spacing: 25) {
+                        Button {
+                            selectIDX = index
+                            loadSelectedStylo()
+                            showEditorView = true
+                        } label: {
+                            Image(systemName: "square.and.pencil")
+                                .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                        }
+                        .contentTransition(.symbolEffect(.replace))
+                        .labelsHidden()
+                        
+                        if(false && columns == 1 ) {
+                            Button(action: {
+                                isSaving = true
+                                saveTask = shareStylo(model.quotes[index])
+                            }) {
+                                HStack {
+                                    Text("Send")
+                                    Image(systemName:  "paperplane")
                                 }
-                                .disabled(isSaving)
-                               // .symbolEffect(.bounce, options: isSaving ? .repeating : .nonRepeating , value: isSaving)
+                                .frame(width: 95, height: 24)
+                                .font(.headline)
+                                .padding()
+                                .background(isSaving ? Color.gray : Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
                             }
-                            
-                            Button {
-                                toggleFavorite(stylo: model.quotes[index])
-                            } label: {
-                                Image(systemName: isFavorite(stylo: model.quotes[index]) ? "star.fill" : "star")
-                                // .resizable()
-                                //.frame(width: 24, height: 24) // Fixed size for the star button
-                                    .scaleEffect(CGSize(width: 1.3, height: 1.3))
-                            }
-                            .labelsHidden()
-                            
-                        }.scaleEffect(CGSize(width: columns, height: columns))
-                            .padding()
-                    
+                            .disabled(isSaving)
+                        }
+                        
+                        Button {
+                            toggleFavorite(stylo: model.quotes[index])
+                        } label: {
+                            Image(systemName: isFavorite(stylo: model.quotes[index]) ? "star.fill" : "star")
+                                .scaleEffect(CGSize(width: 1.3, height: 1.3))
+                        }
+                        .labelsHidden()
+                        
+                    }.scaleEffect(CGSize(width: columns, height: columns))
+                        .padding()
                 }
             }
         }
     }
     
-    // Function to load selected stylo into editSTL
+    // All your existing methods remain the same...
     func loadSelectedStylo() {
         var selectedStylo: Stylo = Stylo(text: "",
                                        textSize: 40,
@@ -263,32 +243,25 @@ struct Favorites: View {
         Helper.mapStyloToEditSTL(selectedStylo, editSTL)
     }
 
-    // Function to save or remove Stylo from UserDefaults as a favorite
     func toggleFavorite(stylo: Stylo) {
         if let index = favorites.firstIndex(where: { $0.text == stylo.text && $0.textSize == stylo.textSize }) {
-            // If the stylo is already a favorite, remove it
             favorites.remove(at: index)
         } else {
-            // Otherwise, add it to the favorites
             favorites.append(stylo)
         }
-        
         saveFavorites()
     }
 
-    // Function to check if a Stylo is already in favorites
     func isFavorite(stylo: Stylo) -> Bool {
         return favorites.contains(where: { $0.text == stylo.text && $0.textSize == stylo.textSize })
     }
 
-    // Function to save favorites to UserDefaults
     func saveFavorites() {
         if let encoded = try? JSONEncoder().encode(favorites) {
             UserDefaults.standard.set(encoded, forKey: "FavoriteStylos")
         }
     }
 
-    // Function to load favorites from UserDefaults
     func loadFavorites() {
         if let savedData = UserDefaults.standard.data(forKey: "FavoriteStylos"),
            let decoded = try? JSONDecoder().decode([Stylo].self, from: savedData) {
@@ -296,7 +269,6 @@ struct Favorites: View {
         }
     }
 
-    // Placeholder for share function
     func shareStylo(_ stylo: Stylo) -> Task<Void, Never>{
         print("Share Z \(stylo.text)")
         Helper.size = stylo.textSize
@@ -304,50 +276,16 @@ struct Favorites: View {
         var editSTL:EditStylo = EditStylo()
         Helper.mapStyloToEditSTL(stylo, editSTL)
         return Helper.presentShareLink(stylo, $progress)
-        
-        //Analytics.logEvent(AnalyticsEventShare,  parameters: ["param_appShared" : "App Shared from\( Favorites.self)"])
     }
     
-    
-    // Filter model.quotes based on selectedFilter
-//    var filteredStylos: [Int] {
-//           switch selectedFilter {
-//           case .all:
-//               return Array(0..<model.quotes.count)
-//           case .favorite:
-//               return Array(0..<model.quotes.count).filter { isFavorite(stylo: model.quotes[$0]) }
-//           case .funny:
-//               return Array(0..<model.quotes.count).filter {  model.quotes[$0].cat.contains("funny") }
-//           case .love:
-//               return Array(0..<model.quotes.count).filter {   model.quotes[$0].cat.contains("love") }
-//           case .money:
-//               return Array(0..<model.quotes.count).filter { model.quotes[$0].cat.contains("money") }
-//           
-//               
-//           case .invite:
-//               // Implement filtering logic for "invite" if needed
-//               return Array(0..<model.quotes.count) // Placeholder
-//           case .flyer:
-//               // Implement filtering logic for "flyer" if needed
-//               return Array(0..<model.quotes.count) // Placeholder
-//           case .cupon:
-//               // Implement filtering logic for "cupon" if needed
-//               return Array(0..<model.quotes.count) // Placeholder
-//           case .other:
-//               // Implement filtering logic for "other" if needed
-//               return Array(0..<model.quotes.count) // Placeholder
-//           }
-//       }
     var filteredStylos: [Int] {
-           Array(0..<model.quotes.count)
-               .filter { styloIndex in
-                   let stylo = model.quotes[styloIndex]
-                   return (searchText.isEmpty || stylo.text.localizedCaseInsensitiveContains(searchText)) &&
-                   (selectedFilter == .all ||  stylo.cat.contains(selectedFilter.rawValue.lowercased()))
-               }
-       }
-
-       
+        Array(0..<model.quotes.count)
+            .filter { styloIndex in
+                let stylo = model.quotes[styloIndex]
+                return (searchText.isEmpty || stylo.text.localizedCaseInsensitiveContains(searchText)) &&
+                (selectedFilter == .all ||  stylo.cat.contains(selectedFilter.rawValue.lowercased()))
+            }
+    }
 }
 
 #Preview {

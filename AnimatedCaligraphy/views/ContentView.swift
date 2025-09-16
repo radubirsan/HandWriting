@@ -57,31 +57,29 @@ struct ContentView: View {
                               showAll: true, columns: 1)
                     .tabItem {
                         Label("Explore", systemImage: "magnifyingglass")
+                            .font(.footnote) // makes the label smaller
+                            .labelStyle(.titleAndIcon)
                     }
                     .tag(1)
-                    
-                    // Editor View with videoModel
-//                    EditorView(editSTL:editSTL, videoModel:videoModel)
-//                        .tabItem {
-//                            Label("Editor", systemImage: "square.and.pencil")
-//                        }
-//                        .tag(3)
+                
+//                    Favorites(selectIDX: $styloSelection,
+//                              tabSelection: $tabSelection,
+//                              showAll: false, columns: 2 )
+//                    .tabItem {
+//                        Label("Camera", systemImage: "camera")
+//                    }.tag(3)
+//                    
                     Favorites(selectIDX: $styloSelection,
                               tabSelection: $tabSelection,
                               showAll: false, columns: 2 )
                     .tabItem {
-                        Label("Camera", systemImage: "camera")
-                    }.tag(3)
-                    
-                    // Pass model.quotes to Favorites for Favorite quotes
-                    Favorites(selectIDX: $styloSelection,
-                              tabSelection: $tabSelection,
-                              showAll: false, columns: 2 )
-                    .tabItem {
-                        Label("History", systemImage: "person")
+                        Label("Favorites", systemImage: "person")
                     }
                     .tag(2)
                 }
+//                .tabViewBottomAccessory {
+//                    Text("Hello, world!")
+//                }
                 .tabBarMinimizeBehavior(.automatic)
                 .onChange(of: tabSelection) { _, newSelection in
                     if newSelection == 3 {  // When switching to the Editor tab
