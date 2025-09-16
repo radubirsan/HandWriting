@@ -601,10 +601,45 @@ struct EditorView: View {
                 animatePlane = false
                 let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
                 let fileUrl2 = directoryPath!.appendingPathComponent("modified").appendingPathExtension("mp4")
-                guard let url = URL(string: fileUrl2.absoluteString) else { return }
-                let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                let scene = UIApplication.shared.connectedScenes.first { $0.activationState == .foregroundActive } as? UIWindowScene
-                scene?.keyWindow?.rootViewController?.present(vc, animated: true)
+                
+                // Check if file exists
+                guard FileManager.default.fileExists(atPath: fileUrl2.path) else {
+                    print("Video file does not exist at path: \(fileUrl2.path)")
+                    return
+                }
+                
+                // Use the URL directly, not through string conversion
+                let vc = UIActivityViewController(activityItems: [fileUrl2], applicationActivities: nil)
+                vc.excludedActivityTypes = [.assignToContact, .saveToCameraRoll, .addToReadingList]
+                
+                // Find the topmost view controller
+                func findTopViewController() -> UIViewController? {
+                    guard let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+                          let window = windowScene.windows.first(where: { $0.isKeyWindow }) else {
+                        return nil
+                    }
+                    
+                    var topController = window.rootViewController
+                    while let presentedController = topController?.presentedViewController {
+                        topController = presentedController
+                    }
+                    return topController
+                }
+                
+                if let presentingViewController = findTopViewController() {
+                    // For iPad, set popover presentation controller
+                    if let popover = vc.popoverPresentationController {
+                        popover.sourceView = presentingViewController.view
+                        popover.sourceRect = CGRect(x: presentingViewController.view.bounds.midX, y: presentingViewController.view.bounds.midY, width: 0, height: 0)
+                        popover.permittedArrowDirections = []
+                    }
+                    
+                    presentingViewController.present(vc, animated: true) {
+                        print("Share sheet presented successfully")
+                    }
+                } else {
+                    print("Could not find presenting view controller")
+                }
             }
         }
     }
