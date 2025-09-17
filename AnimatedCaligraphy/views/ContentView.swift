@@ -141,6 +141,7 @@ class Model {
     static let shared = Model()
     
     var quotes = [Stylo]()
+    var isLoading = true
     private init() {
         print("init model")
        Task { try await fetchAllQuotes()}
@@ -151,6 +152,7 @@ class Model {
     @MainActor
     func fetchAllQuotes() async throws {
         quotes = try await   QuotesService.fetchAllAvailableQuotes()
+        isLoading = false
     }
     
 }

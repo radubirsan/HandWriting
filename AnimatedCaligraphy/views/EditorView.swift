@@ -75,14 +75,10 @@ struct EditorView: View {
                         
                         controlBar().padding(.top)
                         
-                        if showBackgroundGallery {
-                            createBackgroundPhotoGallery()
-                        }
-                        
                         Spacer(minLength: 80) // leave space so content doesn’t hide behind button
                     }
                 }
-                
+               
                 // ✅ Stick generate button here
                 if !isEditing && !isFocused {
                     generateButton()
@@ -131,17 +127,10 @@ struct EditorView: View {
                 }
             }
             .onChange(of: selectedTextSize) { _, new in
-                           if new == 60 {
-                               Helper.size = 60
-                               editSTL.textSize = 60
-                           }
-                           if new == 40 {
-                               Helper.size = 40
-                               editSTL.textSize = 40
-                           }
-                           if new == 20 {
-                               Helper.size = 20
-                               editSTL.textSize = 20
+                           // Defer the text size change to avoid blocking the picker UI
+                           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                               Helper.size = CGFloat(new)
+                               editSTL.textSize = CGFloat(new)
                            }
                        }
                        .onChange(of: selectedAlignment ) { _, newValue in
@@ -265,7 +254,6 @@ struct EditorView: View {
                         Label("right", systemImage: "text.alignright").tag(2)
                     }
                     Picker(selection: $selectedTextSize, label: Text("")) {
-                        
                         Text("Large").tag(60)
                         Text("Medium").tag(40)
                         Text("Small").tag(20)
@@ -274,10 +262,7 @@ struct EditorView: View {
                     Image(systemName:  "textformat.size")
                     .frame(width: 40, height: 40)
                 }.buttonStyle(.glass)
-                
-               
-                
-                
+
                 Button {
                     if isFocused {
                         isFocused = false
@@ -332,45 +317,45 @@ struct EditorView: View {
               //  }
             }
         }
-//        HStack {
-//            Text("**Offset X**")
-//            Slider(value: $offsetX, in: -60.0 ... 0.0, step: 10.0, label: {}, minimumValueLabel: {
-//                Text("-60.0")
-//            }, maximumValueLabel: {
-//                Text("0.0")
-//            })
-//        }
-//        
-//        HStack {
-//            Text("**Offset Y**")
-//            Slider(value: $offsetY, in: -20.0 ... 20.0, step: 10.0, label: {}, minimumValueLabel: {
-//                Text("-20.0")
-//            }, maximumValueLabel: {
-//                Text("20.0")
-//            })
-//        }
-//        
-//        HStack {
-//            Text("**Glass Container \nSpacing**")
-//            Slider(value: $containerSpacing, in: 0.0 ... 60.0, step: 10.0, label: {}, minimumValueLabel: {
-//                Text("0.0")
-//            }, maximumValueLabel: {
-//                Text("60.0")
-//            })
-//        }
-//        
-//        HStack(spacing: 24){
-//            Button(action: {
-//                withAnimation(.linear(duration: 1), {
-//                    show.toggle()
-//                })
-//            }, label: {
-//                Text("Show/Hide")
-//            })
-//            .buttonStyle(.borderedProminent)
-//            
-//            
-//        }
+            HStack {
+                Text("**Offset X**")
+                Slider(value: $offsetX, in: -60.0 ... 0.0, step: 10.0, label: {}, minimumValueLabel: {
+                    Text("-60.0")
+                }, maximumValueLabel: {
+                    Text("0.0")
+                })
+            }
+            
+            HStack {
+                Text("**Offset Y**")
+                Slider(value: $offsetY, in: -20.0 ... 20.0, step: 10.0, label: {}, minimumValueLabel: {
+                    Text("-20.0")
+                }, maximumValueLabel: {
+                    Text("20.0")
+                })
+            }
+            
+            HStack {
+                Text("**Glass Container \nSpacing**")
+                Slider(value: $containerSpacing, in: 0.0 ... 60.0, step: 10.0, label: {}, minimumValueLabel: {
+                    Text("0.0")
+                }, maximumValueLabel: {
+                    Text("60.0")
+                })
+            }
+            
+            HStack(spacing: 24){
+                Button(action: {
+                    withAnimation(.linear(duration: 1), {
+                        show.toggle()
+                    })
+                }, label: {
+                    Text("Show/Hide")
+                })
+                .buttonStyle(.borderedProminent)
+                
+                
+            }
     }
     
     @ViewBuilder

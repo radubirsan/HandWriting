@@ -46,15 +46,35 @@ struct Favorites: View {
                 }
                 .padding()
                 
-                if columns == 2 {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                        contentView.scaleEffect(CGSize(width: 0.5, height: 0.5)).frame(height: 230)
+                if model.isLoading {
+                    // Skeleton loading view
+                    if columns == 2 {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                            ForEach(0..<6, id: \.self) { _ in
+                                skeletonCard
+                                    .scaleEffect(CGSize(width: 0.5, height: 0.5))
+                                    .frame(height: 230)
+                            }
+                        }
+                    } else {
+                        VStack(spacing: 20) {
+                            ForEach(0..<3, id: \.self) { _ in
+                                skeletonCard
+                            }
+                        }
+                        .padding()
                     }
                 } else {
-                    VStack {
-                        contentView
+                    if columns == 2 {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                            contentView.scaleEffect(CGSize(width: 0.5, height: 0.5)).frame(height: 230)
+                        }
+                    } else {
+                        VStack {
+                            contentView
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
             }
           //  .navigationBarTitleDisplayMode(.inline)
@@ -144,6 +164,56 @@ struct Favorites: View {
                                                 AnalyticsParameterScreenClass: "\(Favorites.self)"])
             }
         }
+    }
+    
+    // Skeleton loading card
+    var skeletonCard: some View {
+        VStack {
+            // Main content skeleton
+            VStack(alignment: .leading, spacing: 8) {
+                // Title line skeleton
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Content lines skeleton
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.25))
+                    .frame(height: 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(height: 16)
+                    .frame(width: UIScreen.main.bounds.width * 0.7)
+                
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.15))
+                    .frame(height: 16)
+                    .frame(width: UIScreen.main.bounds.width * 0.5)
+            }
+            .padding(EdgeInsets(top: 60, leading: 30, bottom: 60, trailing: 30))
+            .frame(width: 365, height: 365)
+            .background(
+                RoundedRectangle(cornerRadius: 19)
+                    .fill(Color.gray.opacity(0.1))
+                    .shadow(radius: 10, y: 10.0)
+            )
+            
+            // Button skeleton
+            HStack(spacing: 25) {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 35, height: 35)
+                
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 35, height: 35)
+            }
+            .padding()
+        }
+        .modifier(ShimmerEffect())
     }
     
     // Rest of your methods remain the same...
@@ -304,4 +374,34 @@ struct Favorites: View {
     }
 
     return Preview()
+}
+
+// Shimmer effect for skeleton loading
+struct ShimmerEffect: ViewModifier {
+    @State private var phase: CGFloat = 0
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear,
+                        Color.white.opacity(0.6),
+                        Color.clear
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .rotationEffect(.degrees(30))
+                .offset(x: phase)
+                .animation(
+                    Animation.linear(duration: 1.5)
+                        .repeatForever(autoreverses: false),
+                    value: phase
+                )
+            )
+            .onAppear {
+                phase = 400
+            }
+    }
 }
